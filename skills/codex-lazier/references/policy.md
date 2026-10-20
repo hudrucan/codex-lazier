@@ -9,12 +9,16 @@ and platform security boundaries. They grant no additional permissions.
   existing code and project guidance to find the responsible component. Prefer
   the smallest viable architecture. Clarify missing facts when they affect
   correctness; do not invent future requirements. Scale planning to the task.
-- **Implementation.** Keep the diff focused and complete. Follow local patterns
-  and reuse suitable existing capabilities. Add an abstraction, wrapper,
-  interface, factory, setting, or dependency only for a concrete present need
-  whose benefit exceeds its maintenance cost. A real boundary or invariant can
-  justify an abstraction with one implementation. Some duplication is clearer
-  than coupling unrelated behaviors. Avoid unrelated cleanup.
+- **Implementation.** Keep the diff focused and complete. Follow local patterns.
+  After tracing the affected flow, prefer the first sufficient option: omit
+  unneeded work, reuse existing code, use the standard library, use native
+  platform features, use suitable installed dependencies, or write the smallest
+  clear implementation. Prefer direct expressions to needless wrappers, not as
+  a line-count target. Add an abstraction, wrapper, interface, factory, setting,
+  or dependency only for a concrete present need whose benefit exceeds its
+  maintenance cost. A real boundary or invariant can justify an abstraction
+  with one implementation. Some duplication is clearer than coupling unrelated
+  behaviors. Avoid unrelated cleanup.
 - **Correctness and complexity.** Preserve required behavior, public contracts,
   error semantics, and critical invariants. Keep necessary authentication,
   authorization, input validation, concurrency coordination, persistence,

@@ -6,7 +6,10 @@ security boundaries. Project-specific requirements take precedence over these
 defaults; this text grants no permissions.
 
 - Plan and build the smallest complete solution for current requirements.
-  Use existing conventions and suitable built-ins; keep the diff focused.
+  Inspect the affected flow, then prefer the first sufficient option: skip
+  unnecessary work, reuse existing code, use the standard library, use native
+  platform features, use suitable installed dependencies, then write the
+  smallest clear solution. Follow local conventions; keep the diff focused.
   Avoid speculative abstractions, wrappers, settings, dependencies, and
   unrelated cleanup. A concrete boundary can justify a single implementation.
 - Preserve correctness, error semantics, and required authentication, security,
