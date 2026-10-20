@@ -31,7 +31,8 @@ and platform security boundaries. They grant no additional permissions.
   and tests tied to incidental call order or private structure. Keep interaction
   checks when the interaction itself is a required contract. Do not weaken
   assertions to accommodate a refactor. Run applicable project checks and
-  checks justified by the change's risk; reuse still-relevant evidence.
+  checks justified by the change's risk; reuse still-relevant evidence and
+  rerun verification when changes invalidate it.
 - **Logging.** Keep diagnostics that support a concrete operational action or
   required audit trail, at the level that can add context or handle the failure.
   Avoid repeated error reports and temporary debug chatter. Protect secrets
@@ -48,11 +49,15 @@ and platform security boundaries. They grant no additional permissions.
   code. Include only prerequisite cleanup needed for the change to work safely.
 - **Review.** Support findings with a location, concrete evidence, impact, and
   an appropriate fix. Only simplicity findings require a smaller
-  behavior-preserving alternative. Correctness/security fixes may add necessary
-  code or correct broken behavior; simplicity must not suppress them.
+  behavior-preserving alternative: identify the mechanism's current responsibility,
+  concrete cost, and required behavior the alternative preserves. Check evidence
+  before calling code unused, redundant, or speculative. Correctness/security
+  fixes may add necessary code or correct broken behavior; simplicity must not
+  suppress them.
   Distinguish unknowns from defects. Personal style preferences alone are not
   findings. Leaving justified code unchanged is a successful outcome.
 - **Handoff.** Briefly state changed behavior, important decisions, verification
   actually performed, and unresolved risks. Label unrun checks and assumptions.
-  Do not require new plans, checklists, review cycles, artifacts, or additional
-  agents for routine work. Invoke an optional review only when requested.
+  Do not require unnecessary agents, plans, reports, checklists, artifacts, or
+  review cycles; use them when the task warrants them within existing permissions.
+  Invoke an optional review only when requested.
