@@ -1,0 +1,7 @@
+interface:
+  display_name: "codex-lazier"
+  short_description: "Review unnecessary engineering complexity"
+  default_prompt: "Review this diff, file, or design for unnecessary complexity."
+
+policy:
+  allow_implicit_invocation: false

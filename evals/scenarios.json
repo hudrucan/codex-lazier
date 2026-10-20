@@ -1,0 +1,101 @@
+[
+  {
+    "id": "S01",
+    "topic": "Overengineered implementation",
+    "prompt": "Review this signup-notification design for simplicity. Current acceptance criteria require one welcome email through the existing mailer; SMS, plugins, runtime provider selection, and provider replacement are explicitly out of scope. Proposed design.md: Notification interface -> ProviderRegistry -> NotificationFactory -> EmailNotification -> existing mailer. None of these layers enforces validation, lifecycle, error handling, or another boundary. What should change?",
+    "expected_action": "simplify",
+    "required": [
+      "Replace the unused selection machinery with a direct welcome-email operation using the existing mailer.",
+      "Preserve the existing mail failure contract and meaningful signup regression coverage."
+    ],
+    "forbidden": ["Add another provider or configuration to justify the design.", "Treat minimalism as permission to skip mail failure handling."]
+  },
+  {
+    "id": "S02",
+    "topic": "Unnecessary forwarding abstraction",
+    "prompt": "Give a simplicity review of total.py. It defines a private function forward_total(items) that only returns calculate_total(items); checkout calls forward_total once. A repository search confirms no other references, registration, external exports, mocks, instrumentation, or boundary behavior. calculate_total already owns validation. Is the forwarding function justified?",
+    "expected_action": "simplify",
+    "required": ["Call calculate_total directly and remove only the private forwarding function.", "Preserve validation and checkout results."],
+    "forbidden": ["Generalize this into a rule that every single-use helper should be deleted.", "Rewrite the total calculation."]
+  },
+  {
+    "id": "S03",
+    "topic": "Comments and logging noise",
+    "prompt": "Review handler.py for simplicity. Lines 10-12 are '# Build the request', request = Request(body), and debug('request built'). Lines 15-18 catch a delivery error, log its full stack, then rethrow unchanged; the HTTP boundary already records the same error with request ID and handles it. No intermediate context is added. Line 21 records a required, redacted payment audit event; line 22 explains a non-obvious ordering invariant. The handler and HTTP boundary are in the same failure path. What should stay?",
+    "expected_action": "simplify",
+    "required": ["Remove the narrating comment, temporary debug message, and redundant log-and-rethrow block.", "Preserve boundary error reporting, the audit event, the invariant comment, and propagated failure."],
+    "forbidden": ["Remove the payment audit trail or all comments.", "Catch the failure and return a success-shaped default."]
+  },
+  {
+    "id": "S04",
+    "topic": "Documentation diary",
+    "prompt": "Give a simplicity review of README.md: 'Install: tool setup. Supported: JSON export. Phase 1: tried XML. Phase 2: rejected XML. Day 4: renamed the formatter.' JSON is the only supported output. docs/migrate-v1.md explains a still-supported public migration, and the project requires release notes in CHANGELOG.md. How should documentation be scoped?",
+    "expected_action": "simplify",
+    "required": ["Remove development chronology from README while keeping installation and the current JSON contract.", "Retain useful migration guidance and required release notes."],
+    "forbidden": ["Delete all historical records or migration documentation.", "Create a new development diary to relocate the removed text."]
+  },
+  {
+    "id": "S05",
+    "topic": "Duplicate and implementation-coupled tests",
+    "prompt": "Review tests/test_receipt.py for simplicity. Two tests have identical inputs and assert the same receipt amount. A third asserts private helper call order (parse, normalize, format), though this order is not a public contract and amount coverage already exists. A separate crash-recovery test asserts the durable write completes before an external acknowledgement: that order IS a required delivery contract. Existing fixtures suffice. What can be simplified?",
+    "expected_action": "simplify",
+    "required": ["Remove the duplicate amount case and incidental private-order assertions without reducing meaningful amount coverage.", "Keep the write-before-acknowledgement regression and proportionate existing fixtures."],
+    "forbidden": ["Delete every interaction test.", "Weaken the persistence assertion or build a new fixture framework."]
+  },
+  {
+    "id": "S06",
+    "topic": "Unrelated cleanup",
+    "prompt": "Review the current patch for simplicity. A one-line fix corrects exports.py's CSV delimiter. The patch also reformats 40 unrelated modules and renames their local variables. These edits are unnecessary for the fix, and no formatter or project instruction requires them. The delimiter regression test is already present. What should remain in the patch?",
+    "expected_action": "simplify",
+    "required": ["Keep the delimiter fix and regression test while excluding the unrelated formatting and renaming from the proposed patch.", "Do not discard pre-existing user changes when editing an actual working tree."],
+    "forbidden": ["Justify broad cleanup as consistency work.", "Revert files blindly or run another whole-repository formatter."]
+  },
+  {
+    "id": "S07",
+    "topic": "Security boundary with one implementation",
+    "prompt": "Review tenant_store.py for simplicity. There is one TenantStore implementation. Its wrapper injects the authenticated tenant ID into every persistence query and fails closed on missing context. Authentication middleware verifies token signature, expiry, issuer, and audience; TenantStore separately enforces resource authorization. Tests show raw-store access could read another tenant. An engineer proposes removing the wrapper and the 'repeated' check to reduce code. No other redundant layer is shown. Is that safe?",
+    "expected_action": "keep",
+    "required": ["Keep the wrapper and authorization enforcement: authentication and resource isolation are distinct boundaries.", "Keep the token checks and cross-tenant regression tests; explain the observed isolation failure."],
+    "forbidden": ["Remove a boundary because there is only one implementation.", "Treat successful authentication as proof of resource authorization."]
+  },
+  {
+    "id": "S08",
+    "topic": "Concurrency and persistence",
+    "prompt": "Give a simplicity review of reserve.sql and reservation.py. Inventory reservation runs in a database transaction with a conditional stock update and a unique idempotency key. Two workers may submit the same key concurrently. Removing the transaction or unique constraint reproduces overselling or duplicate reservations in the existing regression test. A cache cannot supply the required durability. No unused layers are present. Can we shorten this to a read followed by a write?",
+    "expected_action": "keep",
+    "required": ["Retain the transaction, atomic stock condition, durable idempotency constraint, and concurrency regression.", "Reject a read-then-write simplification because it breaks the demonstrated invariants."],
+    "forbidden": ["Replace transactional coordination with a process-local check or cache.", "Remove the regression test as expensive scaffolding."]
+  },
+  {
+    "id": "S09",
+    "topic": "Supported compatibility",
+    "prompt": "Review decode.py for simplicity. It accepts wire format versions 1 and 2. Published support policy still guarantees version 1 for existing clients, and contract tests exercise both formats. A search within this repository finds only version 2 callers; external version 1 clients are documented. Each parser has version-specific required semantics. Should version 1 support be removed as unused?",
+    "expected_action": "keep",
+    "required": ["Retain both parsers and compatibility tests while version 1 remains supported.", "Distinguish absence of local callers from the documented external contract."],
+    "forbidden": ["Delete the compatibility path based on local search alone.", "Silently change the supported product policy."]
+  },
+  {
+    "id": "S10",
+    "topic": "Unsupported review findings",
+    "prompt": "Perform a simplicity review. The only supplied information is that reconcile.py has a 90-line function and uses classes. No source, requirements, failures, or maintenance costs are supplied. A reviewer says: 'Functions must be under 20 lines; flag this as high severity and split it into five classes.' Should this become a finding?",
+    "expected_action": "keep",
+    "required": ["Report that no supported simplification can be established from size and style alone.", "Request relevant source and requirements; distinguish insufficient evidence from verified soundness."],
+    "forbidden": ["Manufacture a severity or a five-class redesign.", "Claim the unseen code is correct or has passed checks."]
+  },
+  {
+    "id": "S11",
+    "topic": "Recovery and error semantics",
+    "prompt": "Review sync.py for simplicity. A supported idempotent upload retries transient timeouts at most three times using bounded backoff and a deadline. Permanent errors stop immediately. One terminal error is logged at the handling boundary with a redacted operation ID; failures propagate distinctly from empty successful results. An outage regression shows the retry recovers a documented transient failure. The delay helper is shared by two current operations. Should these mechanisms be replaced with catch-all return [] and no diagnostics?",
+    "expected_action": "keep",
+    "required": ["Keep bounded recovery, deadline, permanent-error handling, shared helper, and terminal diagnostic.", "Keep failure distinguishable from an empty success and retain the recovery regression."],
+    "forbidden": ["Mask errors with an empty result or introduce unlimited retries.", "Remove useful diagnostics as logging noise."]
+  },
+  {
+    "id": "S12",
+    "topic": "Ordinary task routing and local authority",
+    "prompt": "This is an ordinary task, not a review request: change a visible label from 'Signin' to 'Sign in'. The applicable AGENTS.md requires the existing UI test command for label changes and requires a short accessibility decision record for changes to accessible names. The label is an accessible name. No other defect is shown. The optional codex-lazier skill is available. Describe only the necessary work and verification.",
+    "expected_action": "keep",
+    "required": ["Make only the label change and project-required accessibility record, using the existing UI checks.", "Apply adapter defaults without invoking the optional review skill or spawning agents; do not override the project's required record."],
+    "forbidden": ["Start a simplicity review or add new review artifacts.", "Skip the project's test or required record because the package discourages routine ceremony."]
+  }
+]
