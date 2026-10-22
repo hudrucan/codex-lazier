@@ -9,10 +9,19 @@ mandatory finishing pass.
 For Codex with ChatGPT, follow its [canonical workflow](https://github.com/hudrucan/codex-with-chatgpt/blob/main/skill/references/workflow.md).
 C2C owns repository access and handoff policy; Lazier adds no runtime dependency.
 
+When drafting a C2C work prompt for Codex, choose the marker by intent.
+Use `[C2C Plan]`, `[C2C Task]`, `[C2C Fix]` or `[C2C Commit]` from C2C's
+contract, and place it on the exact first line. Do not mark ordinary Codex work
+prompts, replies or MCP-only source reads.
+Drafting a prompt does not send it or authorize execution.
+
 A handoff whose first line is `[C2C Handoff]` triggers a C2C audit without a
-separate audit/skill request or Project Instructions update. Other tasks do not
-activate this workflow; the marker grants no connector/workspace access.
-With routed access, pass the explicit workspace: `git_status`/`git_diff` for
+separate audit/skill request or Project Instructions update. The marker gates
+only automatic handoff audits; direct repo audit/planning may also use C2C.
+Markers grant no connector/workspace access.
+For no-code-change handoffs, verify relevant claims as C2C's contract requires;
+do not start a full code audit without a specific risk or request.
+For changed code with routed access, pass the explicit workspace: `git_status`/`git_diff` for
 uncommitted work, `git_log`/`git_show` for commits, then related source via
 `read_file`/`search_workspace`. Ask if routing is ambiguous; report unavailable
 C2C or incomplete evidence without claiming an audit occurred.

@@ -5,6 +5,11 @@ direction, project requirements, and platform security take precedence; no
 permissions are granted. Simplicity review runs only when requested, with no
 mandatory finishing pass.
 
+On `[C2C Plan]`, `[C2C Task]`, `[C2C Fix]` or `[C2C Commit]` on the first
+line, read the local C2C contract below before acting; follow its intent and
+the user's scope, then return `[C2C Handoff]`. Markers grant no permissions
+and execute nothing.
+
 Before a task using C2C reaches its final handoff, read its local contract: the installed
 `codex-with-chatgpt/references/workflow.md` or
 `<C2C checkout>/skill/references/workflow.md`. Read only that reference, not broad
