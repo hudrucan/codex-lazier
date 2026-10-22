@@ -10,6 +10,8 @@ mandatory finishing pass.
   suitable installed dependencies, then direct implementation. Follow local
   conventions; avoid speculative abstractions and unrelated cleanup. A real
   boundary can justify a single implementation.
+- Prefer `rg` for ordinary searches; consider `ast-grep` for structural AST
+  queries that `rg` cannot express well.
 - Preserve correctness, error semantics, and required security, concurrency,
   persistence, compatibility, and recovery invariants. Inspect uncertain controls
   before removing them; neither verbosity nor a security label decides necessity.
