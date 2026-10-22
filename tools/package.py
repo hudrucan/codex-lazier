@@ -12,7 +12,7 @@ from zipfile import BadZipFile, ZIP_DEFLATED, ZipFile, ZipInfo
 
 ROOT = Path(__file__).resolve().parent.parent
 SKILL = ROOT / "skills" / "codex-lazier"
-ARCHIVE = ROOT / "dist" / "codex-lazier-0.1.0.zip"
+ARCHIVE = ROOT / "dist" / "codex-lazier-0.2.0.zip"
 
 
 def require(condition, message):
@@ -25,6 +25,8 @@ def source_files():
         "codex-lazier/SKILL.md": SKILL / "SKILL.md",
         "codex-lazier/agents/openai.yaml": SKILL / "agents/openai.yaml",
         "codex-lazier/references/policy.md": SKILL / "references/policy.md",
+        "codex-lazier/adapters/codex/AGENTS.md": ROOT / "adapters/codex/AGENTS.md",
+        "codex-lazier/adapters/chatgpt/project-instructions.md": ROOT / "adapters/chatgpt/project-instructions.md",
         "codex-lazier/LICENSE": ROOT / "LICENSE",
     }
     for name, source in files.items():
@@ -61,9 +63,9 @@ def validate_sources():
         r'  display_name: ("[^\n]*")\n'
         r'  short_description: ("[^\n]*")\n'
         r'  default_prompt: ("[^\n]*")\n'
-        r'\npolicy:\n  allow_implicit_invocation: false\n', metadata,
+        r'\npolicy:\n  allow_implicit_invocation: true\n', metadata,
     )
-    require(interface is not None, "Required interface metadata or explicit-only invocation policy is missing")
+    require(interface is not None, "Required interface metadata or implicit invocation policy is missing")
     # JSON-quoted strings are a YAML subset; validate values without duplicating UI text.
     require(all(json.loads(value).strip() for value in interface.groups()),
             "Interface metadata strings must not be empty")
@@ -96,7 +98,7 @@ def validate_archive(files):
     with ZipFile(ARCHIVE) as archive:
         names = archive.namelist()
         require(len(names) == len(set(names)) and set(names) == set(files),
-                "Archive entries differ from the four allowed distribution files")
+                "Archive entries differ from the allowed distribution files")
         require(archive.testzip() is None, "Archive CRC validation failed")
         for name, expected in files.items():
             require(archive.read(name) == expected, f"Stale archive content: {name}")
@@ -105,7 +107,7 @@ def validate_archive(files):
     digest = hashlib.sha256(ARCHIVE.read_bytes()).hexdigest()
     require(ARCHIVE.with_suffix(".sha256").read_text(encoding="utf-8") == f"{digest}  {ARCHIVE.name}\n",
             "Archive checksum mismatch")
-    print(f"PASS: metadata, local links, four archive files, CRCs, source identity, SHA-256\n{digest}")
+    print(f"PASS: metadata, local links, {len(files)} archive files, CRCs, source identity, SHA-256\n{digest}")
 
 
 def main():

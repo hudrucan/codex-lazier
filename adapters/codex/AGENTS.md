@@ -1,36 +1,49 @@
-## codex-lazier v0.1 engineering defaults
+## codex-lazier v0.2 — Codex
 
-Derived from the codex-lazier canonical policy; this digest works independently.
-Follow explicit user direction, applicable project instructions, and platform
-security boundaries. Project-specific requirements take precedence over these
-defaults; this text grants no permissions.
+Apply these defaults to every coding task without a manual skill call. User
+direction, project requirements, and platform security take precedence; no
+permissions are granted. Simplicity review runs only when requested, with no
+mandatory finishing pass.
 
-- Plan and build the smallest complete solution for current requirements.
-  Inspect the affected flow, then prefer the first sufficient option: skip
-  unnecessary work, reuse existing code, use the standard library, use native
-  platform features, use suitable installed dependencies, then write the
-  smallest clear solution. Follow local conventions; keep the diff focused.
-  Avoid speculative abstractions, wrappers, settings, dependencies, and
-  unrelated cleanup. A concrete boundary can justify a single implementation.
-- Preserve correctness, error semantics, and required authentication, security,
-  concurrency, persistence, compatibility, and recovery invariants. Challenge
-  needless machinery within those areas too; inspect uncertain controls before
-  removing them. Never trade a real requirement for fewer lines.
-- Test behavior, failures, and invariants with proportionate regression coverage
-  and setup. Avoid duplicate or implementation-coupled tests; retain interactions
-  that are part of the contract. Run applicable project checks and risk-relevant
-  checks without weakening assertions or repeating still-valid verification.
-- Log actionable diagnostics and required audit events without secrets,
-  temporary chatter, or duplicate error reports. Comment on non-obvious reasons,
-  not obvious steps; retain legal notices and invariant explanations.
-- Document the current supported product, setup, contracts, and limitations.
-  Keep implementation diaries out of product docs; preserve necessary release,
-  migration, and decision records. Refactor only within scope, preserving behavior.
-- Ground review findings in concrete evidence, impact, and an appropriate fix.
-  Only simplicity findings require a smaller behavior-preserving alternative.
-  Correctness/security fixes may add necessary code or correct broken behavior;
-  simplicity must not suppress them. Style preferences alone are insufficient.
-  No change is valid when no finding is supported.
-- Hand off changed behavior, important decisions, actual verification, and open
-  risks concisely. Do not require extra plans, artifacts, review cycles, or agents.
-  Use the optional codex-lazier skill only when explicitly requested.
+- Trace the affected flow and build the smallest complete solution for current
+  requirements. Prefer omitting work, reuse, standard library, native features,
+  suitable installed dependencies, then direct implementation. Follow local
+  conventions; avoid speculative abstractions and unrelated cleanup. A real
+  boundary can justify a single implementation.
+- Preserve correctness, error semantics, and required security, concurrency,
+  persistence, compatibility, and recovery invariants. Inspect uncertain controls
+  before removing them; neither verbosity nor a security label decides necessity.
+- Test behavior, failures, and invariants with existing tools and proportionate
+  fixtures. Avoid duplicate or implementation-coupled assertions; retain required
+  interactions. Run applicable checks without weakening assertions or repeating
+  still-valid verification.
+- Keep actionable diagnostics and required audit events; protect secrets and
+  avoid duplicate reports or debug chatter. Explain non-obvious constraints in
+  comments; retain legal notices and invariant explanations.
+- Document current setup, contracts, and limitations rather than development
+  diaries; preserve useful release, migration, and required decision records.
+  Keep refactoring within scope and preserve behavior.
+- Ground findings in evidence, location, impact, and a fix. Simplicity findings
+  require a smaller behavior-preserving alternative; correctness/security fixes
+  may add code or correct broken behavior. Style alone is not a finding.
+  Leave justified code unchanged.
+- Hand off changed behavior, decisions, actual checks, and open risks concisely.
+  Add no unnecessary plans, artifacts, review cycles, or agents.
+
+### Context Mode
+
+- Prefer the installed plugin's `ctx_*` tools for analysis reads, searches, logs,
+  diffs, verbose tests, and suitable tool output. Discover names as needed:
+  `ctx_execute_file` for files, `ctx_execute` for one operation,
+  `ctx_batch_execute` for related captures, `ctx_search` for indexed evidence.
+- Keep known-small observations, edits/mutations, and exact patch-source reads
+  direct when useful. Avoid per-command capability/size probes and extra indexing.
+- Retain full captured evidence; report exit status, failures, and relevant
+  paths/lines. Do not truncate before capture, mask failures with filters, or
+  re-index output already in context. Preserve access and secret boundaries.
+- Reuse the plugin without duplicate servers/hooks or copied code. Check MCP,
+  hook trust, and actual routing separately; honor deny/rewrite decisions without
+  bypassing them. Advisory guidance remains instructions, not hard enforcement.
+- If unavailable or failing, report the limit once and use bounded native tools
+  with the same evidence and permissions. Do not retry indefinitely or install dependencies
+  merely to finish an ordinary task.

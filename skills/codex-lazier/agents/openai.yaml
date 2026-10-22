@@ -1,7 +1,7 @@
 interface:
   display_name: "codex-lazier"
-  short_description: "Review unnecessary engineering complexity"
-  default_prompt: "Review this diff, file, or design for unnecessary complexity."
+  short_description: "Simple engineering defaults for every coding task"
+  default_prompt: "Use $codex-lazier to implement this task with the smallest complete solution."
 
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
