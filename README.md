@@ -7,10 +7,11 @@ safeguards. Simplicity review is optional, with no finishing review pass.
 ## Activation
 
 The [canonical policy](skills/codex-lazier/references/policy.md) defines shared
-behavior. Both adapters are self-contained:
+behavior. The adapters define platform activation:
 
 - [Codex](adapters/codex/AGENTS.md): engineering defaults plus preferences for
-  the installed Context Mode plugin.
+  the installed Context Mode plugin; reads the local C2C contract before each
+  C2C task's final handoff.
 - [ChatGPT Web](adapters/chatgpt/project-instructions.md): Lazier + Codex with ChatGPT,
   without added runtime dependencies or tool integrations.
 
@@ -20,13 +21,17 @@ preserving existing guidance. For personal Codex defaults, use
 `CODEX_HOME/AGENTS.md` (normally `~/.codex/AGENTS.md`); check for an active
 `AGENTS.override.md`. Start a new chat and verify loaded instructions.
 
-Optionally install [the skill](skills/codex-lazier/SKILL.md) in a supported
-discovery directory such as `~/.agents/skills/`. Its
-[metadata](skills/codex-lazier/agents/openai.yaml) permits implicit invocation;
-discovery alone does not guarantee always-on loading. A `$codex-lazier`
+Install [the skill](skills/codex-lazier/SKILL.md) in a discovery location supported
+by the host, such as `~/.agents/skills/` for Codex, or upload the ZIP where Web
+supports skills. Its [metadata](skills/codex-lazier/agents/openai.yaml) retains
+implicit invocation. The description covers Codex handoffs, planning, audits and
+reviews. When available to Web with C2C routing already configured, a handoff
+starting with `[C2C Handoff]` triggers a Git/source audit without a separate audit request or updates to
+each Project's Instructions. Discovery
+does not guarantee host invocation or grant connector access. A `$codex-lazier`
 implementation request remains implementation, not a request for review.
 
-Web retains the existing Codex with ChatGPT source-access and handoff workflow. Project
+Web follows the [canonical C2C workflow](https://github.com/hudrucan/codex-with-chatgpt/blob/main/skill/references/workflow.md). Project
 instructions grant no local repository access and inherit no Codex runtime or
 hooks. They do not change Codex with ChatGPT architecture, code, or license.
 

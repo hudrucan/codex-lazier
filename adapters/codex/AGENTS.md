@@ -5,6 +5,14 @@ direction, project requirements, and platform security take precedence; no
 permissions are granted. Simplicity review runs only when requested, with no
 mandatory finishing pass.
 
+Before a task using C2C reaches its final handoff, read its local contract: the installed
+`codex-with-chatgpt/references/workflow.md` or
+`<C2C checkout>/skill/references/workflow.md`. Read only that reference, not broad
+docs or GitHub; report a missing/unreadable reference as a limitation. Emit
+`[C2C Handoff]` as the exact first line and follow the contract's short format.
+Other tasks keep normal handoffs without this marker or C2C requirements.
+C2C owns the contract; Lazier adds no runtime dependency.
+
 - Trace the affected flow and build the smallest complete solution for current
   requirements. Prefer omitting work, reuse, standard library, native features,
   suitable installed dependencies, then direct implementation. Follow local

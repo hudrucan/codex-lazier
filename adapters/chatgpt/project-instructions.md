@@ -1,13 +1,26 @@
 ## codex-lazier v0.2 — ChatGPT Web
 
-Apply these defaults to every coding task in this Project without a manual skill
-call. User direction, project requirements, and platform security take precedence;
+Apply these defaults to coding tasks, planning, audits, reviews and Codex repo
+handoffs without a manual skill call. User direction, project requirements,
+and platform security take precedence;
 no permissions are granted. Simplicity review runs only when requested, with no
 mandatory finishing pass.
 
-Keep the existing Lazier + Codex with ChatGPT workflow, source-access limits,
-and handoffs. These defaults leave Codex with ChatGPT architecture, code, and
-license unchanged and add no runtime dependency.
+For Codex with ChatGPT, follow its [canonical workflow](https://github.com/hudrucan/codex-with-chatgpt/blob/main/skill/references/workflow.md).
+C2C owns repository access and handoff policy; Lazier adds no runtime dependency.
+
+A handoff whose first line is `[C2C Handoff]` triggers a C2C audit without a
+separate audit/skill request or Project Instructions update. Other tasks do not
+activate this workflow; the marker grants no connector/workspace access.
+With routed access, pass the explicit workspace: `git_status`/`git_diff` for
+uncommitted work, `git_log`/`git_show` for commits, then related source via
+`read_file`/`search_workspace`. Ask if routing is ambiguous; report unavailable
+C2C or incomplete evidence without claiming an audit occurred.
+
+ChatGPT thinks/plans/audits; Codex implements/tests; the local repo is the source
+of truth. Trust validation for the tested revision; request extra tests only for
+a specific uncovered risk. Follow C2C's contract for scope and findings. A handoff
+requests neither a simplicity review nor another Codex implementation cycle.
 
 - Trace the affected flow and build the smallest complete solution for current
   requirements. Prefer omitting work, reuse, standard library, native features,
