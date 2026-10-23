@@ -32,6 +32,9 @@ C2C owns the contract; Lazier adds no runtime dependency.
   fixtures. Avoid duplicate or implementation-coupled assertions; retain required
   interactions. Run applicable checks without weakening assertions or repeating
   still-valid verification.
+- Avoid repeated background-job polling with `sleep`, `ps`, `pgrep`, or `top`.
+  Prefer completion notifications when the runtime supports them, or a bounded
+  wait. Do not assume automatic wake-up; report timeouts and failures explicitly.
 - Keep actionable diagnostics and required audit events; protect secrets and
   avoid duplicate reports or debug chatter. Explain non-obvious constraints in
   comments; retain legal notices and invariant explanations.
