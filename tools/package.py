@@ -12,7 +12,7 @@ from zipfile import BadZipFile, ZIP_DEFLATED, ZipFile, ZipInfo
 
 ROOT = Path(__file__).resolve().parent.parent
 SKILL = ROOT / "skills" / "codex-lazier"
-ARCHIVE = ROOT / "dist" / "codex-lazier-0.2.0.zip"
+ARCHIVE = ROOT / "dist" / "codex-lazier-0.3.0.zip"
 
 
 def require(condition, message):

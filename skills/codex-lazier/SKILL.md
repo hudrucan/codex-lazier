@@ -52,6 +52,25 @@ of truth. Trust validation for the tested revision; request extra tests only for
 a specific uncovered risk. Follow C2C's contract for scope and findings. A handoff
 requests neither a simplicity review nor another Codex implementation cycle.
 
+After each C2C handoff audit, include the next step without waiting for another
+request:
+
+- **FAIL:** supported, actionable findings exist. Include one concise,
+  ready-to-copy prompt starting with `[C2C Fix]`, covering only those findings
+  within the audited scope.
+- **PASS with uncommitted changes:** the audited scope has no unresolved findings
+  or evidence gaps, and verified Git status shows audited changes awaiting commit.
+  Include one concise, ready-to-copy prompt starting with `[C2C Commit]` to commit
+  only those changes, preserving unrelated work and without pushing.
+- **PASS with clean Git status:** confirm completion and omit a follow-up prompt.
+
+Use C2C's prompt contract for repository/workspace identity, audited revision,
+scope and constraints. A Fix prompt includes the findings' locations, evidence,
+impact and proposed fixes. Reuse valid validation; request extra checks only for
+a specific uncovered risk. Missing evidence or unknown Git status is a limitation,
+not a PASS or a defect; request only what is needed to resolve it. Generate prompts
+only; never send them or initiate implementation, commit or push automatically.
+
 ## Explicit simplicity review
 
 Run a simplicity review only when requested; an implementation request using

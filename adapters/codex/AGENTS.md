@@ -1,4 +1,4 @@
-## codex-lazier v0.2 — Codex
+## codex-lazier v0.3 — Codex
 
 Apply these defaults to every coding task without a manual skill call. User
 direction, project requirements, and platform security take precedence; no

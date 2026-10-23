@@ -1,6 +1,6 @@
 # codex-lazier
 
-Version 0.2.0. Always-on engineering defaults for Codex and ChatGPT Web:
+Version 0.3.0. Always-on engineering defaults for Codex and ChatGPT Web:
 build the smallest complete solution while preserving correctness and required
 safeguards. Simplicity review is optional, with no finishing review pass.
 
@@ -30,6 +30,12 @@ starting with `[C2C Handoff]` triggers a Git/source audit without a separate aud
 each Project's Instructions. Discovery
 does not guarantee host invocation or grant connector access. A `$codex-lazier`
 implementation request remains implementation, not a request for review.
+
+After a C2C handoff audit, Web supplies the next step: a ready-to-copy
+`[C2C Fix]` prompt for actionable findings, a `[C2C Commit]` prompt for a PASS
+with audited uncommitted changes, or completion with no prompt for a PASS with
+clean Git status. Incomplete evidence is reported as a limitation. Prompts do
+not execute automatically; see the [Web skill guidance](skills/codex-lazier/SKILL.md#chatgpt-web-handoff-trigger).
 
 Web follows the [canonical C2C workflow](https://github.com/hudrucan/codex-with-chatgpt/blob/main/skill/references/workflow.md). Project
 instructions grant no local repository access and inherit no Codex runtime or
@@ -72,7 +78,7 @@ git diff --check
 ```
 
 On Windows use `py -3`. Build mode writes
-`dist/codex-lazier-0.2.0.zip` and its `.sha256` sidecar; check mode writes nothing.
+`dist/codex-lazier-0.3.0.zip` and its `.sha256` sidecar; check mode writes nothing.
 The six members under `codex-lazier/` are `SKILL.md`, `agents/openai.yaml`,
 `references/policy.md`, `LICENSE`, and both adapters. Bundled adapters do not
 install themselves as active instructions.
