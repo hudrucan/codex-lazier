@@ -29,7 +29,7 @@ verify the behavior that matters.
 - **Keep it grounded.** Base decisions and review findings on source evidence.
   Run relevant checks and state what remains unverified.
 
-The package is instructions: one Skill, two adapters, and a
+The package is instructions: one Skill, two host references, and a
 [shared policy](skills/codex-lazier/references/policy.md). No daemon, custom hook,
 or runtime dependency. Simplicity reviews run only when you ask.
 
@@ -64,26 +64,40 @@ Then start a new session and use `$codex-lazier` in your request.
 <details>
 <summary><strong>Apply Lazier automatically to coding tasks</strong></summary>
 
-Merge the bundled `adapters/codex/AGENTS.md` into your repository's `AGENTS.md`,
-or your Codex home's `AGENTS.md` (normally `~/.codex/AGENTS.md`).
+Add an instruction to your repository's `AGENTS.md`, or your Codex home's
+`AGENTS.md` (normally `~/.codex/AGENTS.md`), to read and apply the installed
+Skill's `references/codex.md` once per chat for every coding task. Use its actual
+absolute installed path. That reference loads `references/policy.md` itself;
+no manual Skill invocation is needed for this bootstrap.
 Preserve existing guidance and check for an active `AGENTS.override.md`.
 
 Start a new session and ask Codex to summarize its loaded instructions.
 Installing the Skill alone does not activate persistent instructions.
-The [Codex adapter](adapters/codex/AGENTS.md) includes the engineering defaults
-and optional integration guidance.
+The [Codex reference](skills/codex-lazier/references/codex.md) owns C2C handoffs
+and Context Mode preferences. For a legacy installation that copied Lazier into
+`AGENTS.md`, replace only that Lazier block with the bootstrap above. Keep the
+installed references together; do not maintain another policy copy.
 
 </details>
 
 #### ChatGPT Web
 
-1. Merge the [Web adapter](adapters/chatgpt/project-instructions.md) into your
-   **Project Instructions**.
-2. Where Skill uploads are supported, upload the release ZIP for on-demand use.
-3. Start a new conversation and check which instructions apply.
+1. Where Skill uploads are supported, install the release ZIP as a ChatGPT Skill.
+2. Start a new conversation and check that `codex-lazier` is available. The Skill
+   loads its bundled Web reference for coding and C2C handoffs, including async
+   `[C2C Audit v1]` responses; a handoff needs no separate skill request.
+3. Keep MCP connector, Hub and workspace routing in **Project Instructions**.
+   Lazier behavior comes from the installed Skill.
 
-Preserve existing Project guidance. Uploading a Skill does not itself activate
-Project Instructions or connect a local repository.
+For legacy hosts without Skill support, optionally make the existing
+[policy](skills/codex-lazier/references/policy.md) and
+[Web reference](skills/codex-lazier/references/web.md) available as Project sources
+and instruct the Project to read and apply both for coding and C2C work. These are
+the same canonical files; there is no separate compatibility copy. Hosts must
+support reading those sources; otherwise disclose the limitation.
+Preserve existing Project guidance; installing a Skill does not connect a local
+repository or grant access. Migration does not require copying Lazier policy into
+Project Instructions.
 
 ## In practice
 
@@ -127,10 +141,12 @@ Lazier works on its own. These integrations reuse tools you already have.
 - **[Codex with ChatGPT](https://github.com/hudrucan/codex-with-chatgpt)** connects Web planning
   and audits with Codex implementation. It owns repository access and the
   [handoff contract](https://github.com/hudrucan/codex-with-chatgpt/blob/main/skill/references/workflow.md).
-  A `[C2C Handoff]` triggers a Web audit; the adapter supplies a focused Fix or
-  Commit prompt when appropriate.
+  A `[C2C Handoff]` triggers a Web audit through the installed Skill. Manual audits
+  supply a focused Fix or Commit prompt when appropriate. Explicit `async=true`
+  uses the canonical bounded audit/fix flow and correlated terminal audit frame;
+  it does not authorize commits, pushes or rollout.
 - **[Context Mode](https://github.com/mksglu/context-mode)** keeps large analysis
-  output out of the conversation. The Codex adapter prefers installed `ctx_*`
+  output out of the conversation. The Codex reference prefers installed `ctx_*`
   tools and falls back to bounded native tools when unavailable. Small
   observations and edits can stay direct.
 - **[TypeSafe Jev](https://docs.typesafe.ai/introduction/coding-agents)** offers
@@ -176,20 +192,22 @@ Every ZIP contains exactly six files under `codex-lazier/`:
 SKILL.md
 agents/openai.yaml
 references/policy.md
-adapters/codex/AGENTS.md
-adapters/chatgpt/project-instructions.md
+references/codex.md
+references/web.md
 LICENSE
 ```
 
-Validation checks metadata, local links, archive members, CRCs, permissions,
-source identity, and SHA-256. Tests cover reproducibility, stale archives, and
-mismatched release tags. Live model and integration behavior are not tested.
+Validation checks metadata, local links in the repository and installed package,
+archive members, CRCs, permissions, source identity, and SHA-256. Host guidance
+lives only in the Skill references; source and ZIP have no separate adapter tree. Tests cover
+package link resolution, reproducibility, stale archives, and mismatched release
+tags. These local checks do not prove live model or integration behavior.
 
 The [workflow](.github/workflows/ci.yml) runs on pull requests, pushes to
 `main`, and `v*` tags. It tests, builds, and compares reproducible output.
 Only a successful version-tag build can publish the ZIP and checksum to
 GitHub Releases. The tag must exactly match `v<VERSION>` in `tools/package.py`.
-For a new version, update that value and the policy/adapter headings before
+For a new version, update that value and the policy/host-reference headings before
 tagging.
 
 CI is read-only. Only the tag-only release job has repository write permission.

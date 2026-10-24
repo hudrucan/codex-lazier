@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import posixpath
 import re
 import sys
 from zipfile import BadZipFile, ZIP_DEFLATED, ZipFile, ZipInfo
@@ -21,15 +22,19 @@ def require(condition, message):
         raise ValueError(message)
 
 
-def source_files():
-    files = {
+def source_paths():
+    return {
         "codex-lazier/SKILL.md": SKILL / "SKILL.md",
         "codex-lazier/agents/openai.yaml": SKILL / "agents/openai.yaml",
         "codex-lazier/references/policy.md": SKILL / "references/policy.md",
-        "codex-lazier/adapters/codex/AGENTS.md": ROOT / "adapters/codex/AGENTS.md",
-        "codex-lazier/adapters/chatgpt/project-instructions.md": ROOT / "adapters/chatgpt/project-instructions.md",
+        "codex-lazier/references/codex.md": SKILL / "references/codex.md",
+        "codex-lazier/references/web.md": SKILL / "references/web.md",
         "codex-lazier/LICENSE": ROOT / "LICENSE",
     }
+
+
+def source_files():
+    files = source_paths()
     for name, source in files.items():
         require(source.is_file() and not source.is_symlink(), f"Missing or symlinked input: {name}")
     return {name: source.read_bytes() for name, source in files.items()}
@@ -71,11 +76,20 @@ def validate_sources():
     require(all(json.loads(value).strip() for value in interface.groups()),
             "Interface metadata strings must not be empty")
 
+    files = source_files()
+    packaged_paths = {source: name for name, source in source_paths().items()}
     for source in ROOT.rglob("*.md"):
         if ".git" in source.relative_to(ROOT).parts:
             continue
         for target in re.findall(r"\[[^\]]*\]\(([^)]+)\)", source.read_text(encoding="utf-8")):
             if "://" in target or target.startswith("#"):
+                continue
+            if source in packaged_paths:
+                # Bundled guidance must link only to files available after installation.
+                member = posixpath.normpath(posixpath.join(
+                    posixpath.dirname(packaged_paths[source]), target.split("#", 1)[0]))
+                require(member in files,
+                        f"Broken package link in {packaged_paths[source]}: {target}")
                 continue
             resolved = (source.parent / target.split("#", 1)[0]).resolve()
             require(resolved.is_relative_to(ROOT) and resolved.is_file(),

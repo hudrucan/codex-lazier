@@ -15,11 +15,31 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 class PackageValidationTests(unittest.TestCase):
+    def test_skill_links_must_resolve_in_the_installed_package(self):
+        with TemporaryDirectory(prefix="codex-lazier-links-") as directory:
+            root = Path(directory)
+            shutil.copytree(ROOT / "skills", root / "skills")
+            shutil.copyfile(ROOT / "LICENSE", root / "LICENSE")
+            (root / "tools").mkdir()
+            shutil.copyfile(ROOT / "tools/package.py", root / "tools/package.py")
+            (root / "README.md").write_text("Repository-only documentation.\n", encoding="utf-8")
+            manifest = root / "skills/codex-lazier/SKILL.md"
+            original = manifest.read_text(encoding="utf-8")
+            for target in ["references/missing.md", "../../README.md"]:
+                with self.subTest(target=target):
+                    manifest.write_text(original + f"\n[Reference]({target})\n", encoding="utf-8")
+                    result = subprocess.run(
+                        [sys.executable, str(root / "tools/package.py"), "--build"],
+                        capture_output=True, text=True,
+                    )
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("Broken package link", result.stderr)
+                    self.assertFalse((root / "dist").exists())
+
     def test_interface_text_can_change_without_weakening_validation(self):
         with TemporaryDirectory(prefix="codex-lazier-metadata-") as directory:
             root = Path(directory)
             shutil.copytree(ROOT / "skills", root / "skills")
-            shutil.copytree(ROOT / "adapters", root / "adapters")
             shutil.copyfile(ROOT / "LICENSE", root / "LICENSE")
             (root / "tools").mkdir()
             shutil.copyfile(ROOT / "tools/package.py", root / "tools/package.py")
@@ -52,7 +72,6 @@ class PackageValidationTests(unittest.TestCase):
         with TemporaryDirectory(prefix="codex-lazier-regression-") as directory:
             root = Path(directory)
             shutil.copytree(ROOT / "skills", root / "skills")
-            shutil.copytree(ROOT / "adapters", root / "adapters")
             shutil.copyfile(ROOT / "LICENSE", root / "LICENSE")
             (root / "tools").mkdir()
             shutil.copyfile(ROOT / "tools/package.py", root / "tools/package.py")
@@ -71,11 +90,10 @@ class PackageValidationTests(unittest.TestCase):
             self.assertIn("FAIL:", result.stderr)
             self.assertNotIn("PASS:", result.stdout)
 
-    def test_distribution_includes_current_adapters_and_rejects_stale_bytes(self):
+    def test_distribution_includes_current_references_and_rejects_stale_bytes(self):
         with TemporaryDirectory(prefix="codex-lazier-archive-") as directory:
             root = Path(directory)
-            for name in ["skills", "adapters"]:
-                shutil.copytree(ROOT / name, root / name)
+            shutil.copytree(ROOT / "skills", root / "skills")
             shutil.copyfile(ROOT / "LICENSE", root / "LICENSE")
             (root / "tools").mkdir()
             shutil.copyfile(ROOT / "tools/package.py", root / "tools/package.py")
@@ -99,22 +117,40 @@ class PackageValidationTests(unittest.TestCase):
             archive = next((root / "dist").glob("*.zip"))
             before = archive.read_bytes()
             with ZipFile(archive) as bundle:
-                self.assertEqual(len(bundle.namelist()), 6)
-                for adapter in ["codex/AGENTS.md", "chatgpt/project-instructions.md"]:
-                    self.assertEqual(bundle.read("codex-lazier/adapters/" + adapter),
-                                     (root / "adapters" / adapter).read_bytes())
+                self.assertCountEqual(bundle.namelist(), [
+                    "codex-lazier/SKILL.md", "codex-lazier/agents/openai.yaml",
+                    "codex-lazier/references/policy.md", "codex-lazier/references/web.md",
+                    "codex-lazier/references/codex.md", "codex-lazier/LICENSE",
+                ])
+                for reference in ["policy.md", "codex.md", "web.md"]:
+                    self.assertEqual(bundle.read("codex-lazier/references/" + reference),
+                                     (root / "skills/codex-lazier/references" / reference).read_bytes())
                 self.assertEqual(bundle.read("codex-lazier/LICENSE"), (root / "LICENSE").read_bytes())
+                installed = root / "installed"
+                bundle.extractall(installed)
+            skill = (installed / "codex-lazier").resolve()
+            links = re.findall(r"\[[^\]]*\]\(([^)]+)\)",
+                               (skill / "SKILL.md").read_text(encoding="utf-8"))
+            for reference in ["policy", "codex", "web"]:
+                self.assertIn(f"references/{reference}.md", links)
+            for source in skill.rglob("*.md"):
+                for target in re.findall(r"\[[^\]]*\]\(([^)]+)\)", source.read_text(encoding="utf-8")):
+                    if "://" not in target and not target.startswith("#"):
+                        resolved = (source.parent / target.split("#", 1)[0]).resolve()
+                        self.assertTrue(resolved.is_relative_to(skill))
+                        self.assertTrue(resolved.is_file(), target)
             self.assertEqual(run("--build").returncode, 0)
             self.assertEqual(archive.read_bytes(), before, "Build must be reproducible")
 
-            adapter = root / "adapters/codex/AGENTS.md"
-            adapter.write_text(adapter.read_text(encoding="utf-8") + "\nNew default.\n", encoding="utf-8")
-            stale = run()
-            self.assertNotEqual(stale.returncode, 0)
-            self.assertIn("Stale archive content", stale.stderr)
-            self.assertNotIn("PASS:", stale.stdout)
-
-            self.assertEqual(run("--build").returncode, 0)
+            for name in ["codex", "web"]:
+                with self.subTest(stale_reference=name):
+                    reference = root / f"skills/codex-lazier/references/{name}.md"
+                    reference.write_text(reference.read_text(encoding="utf-8") + "\nNew default.\n", encoding="utf-8")
+                    stale = run()
+                    self.assertNotEqual(stale.returncode, 0)
+                    self.assertIn("Stale archive content", stale.stderr)
+                    self.assertNotIn("PASS:", stale.stdout)
+                    self.assertEqual(run("--build").returncode, 0)
             archive.with_suffix(".sha256").write_text("wrong\n", encoding="utf-8")
             corrupt = run()
             self.assertNotEqual(corrupt.returncode, 0)
