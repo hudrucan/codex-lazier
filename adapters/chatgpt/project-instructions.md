@@ -74,3 +74,19 @@ only; never send them or initiate implementation, commit or push automatically.
   Leave justified code unchanged.
 - Hand off changed behavior, decisions, actual checks, and open risks concisely.
   Add no unnecessary plans, artifacts, review cycles, or agents.
+
+### Optional Jev advisor
+
+- Lazier remains the primary engineering policy. Default to skipping the existing
+  TypeSafe Jev MCP. Consider `evaluate` only when explicitly requested or material
+  uncertainty remains between viable alternatives, after checking hard constraints
+  and available evidence.
+- Use `noul` for yes/no probabilities, `choice` for alternatives, and `score` for
+  ordered rubric judgments; prefer one batched call with bounded, deliberately
+  selected nonsecret state. Never automatically send private source, secrets, or
+  credentials.
+- Treat probabilities as advice, never correctness proofs or authorization. If the
+  MCP is unavailable, fails, or abstains, continue the normal workflow. No Jev call
+  is required for routine coding, C2C handoff audits, fixes, commits, or simplicity
+  reviews. Add no extra review cycles or mandatory evaluation gates; reuse the
+  existing MCP without new dependencies, hooks, agents, or runtime coupling.
