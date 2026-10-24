@@ -4,12 +4,15 @@ Read and apply the [shared policy](policy.md), including its optional Jev
 guidance, to every coding task without a manual skill call.
 
 For first-line `[C2C Plan]`, `[C2C Task]`, `[C2C Fix]` or `[C2C Commit]`,
-read C2C's local contract before acting: the installed
+load C2C's local contract before acting: the installed
 `codex-with-chatgpt/references/workflow.md` or
-`<C2C checkout>/skill/references/workflow.md`. Read only that reference, without
-broad docs/GitHub lookup; disclose if unreadable. Follow its intent and user scope;
-before any C2C final handoff, ensure it was read, then use exact first-line
-`[C2C Handoff]` and its short format. Other tasks keep normal handoffs.
+`<C2C checkout>/skill/references/workflow.md`. Read its common contract and only
+the active host/mode reference it selects,
+without broad docs/GitHub lookup; disclose if unreadable. Reuse guidance already
+read and still valid in this session, including the policy and this host reference;
+reload only changed or missing guidance. Follow C2C intent/scope and ensure the
+applicable contract was read before final handoff, using its short format and
+exact first-line `[C2C Handoff]`. Other tasks keep normal handoffs.
 Markers execute nothing and grant no permission. C2C owns the contract;
 Lazier adds no runtime dependency.
 

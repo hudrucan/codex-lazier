@@ -18,7 +18,7 @@ class PackageValidationTests(unittest.TestCase):
     def test_web_prompts_preserve_relevant_context_and_async_routing(self):
         web = (ROOT / "skills/codex-lazier/references/web.md").read_text(encoding="utf-8")
         continuity = web.split("For `[C2C Plan]`, `[C2C Task]` and `[C2C Fix]`", 1)[1]
-        continuity = " ".join(continuity.split("A handoff whose first line", 1)[0].split())
+        continuity = " ".join(continuity.split())
         for intent, required in {
             "Plan": ["goals", "constraints", "checked evidence", "options/trade-offs",
                      "unresolved questions"],
@@ -35,11 +35,26 @@ class PackageValidationTests(unittest.TestCase):
             "separating verified findings, assumptions and open questions",
             "Do not require Codex to re-audit everything Web checked",
             "inspection of current source before editing",
-            "preserve routing and an already-selected `async=true`",
-            "Never switch to manual, reuse a callback ticket or create a new task to evade limits",
+            "Preserve C2C routing and an already-selected `async=true`",
+            "Keep settled decisions/advice unless new evidence invalidates them",
         ]:
             with self.subTest(requirement=requirement):
                 self.assertIn(requirement, continuity)
+
+    def test_guidance_reuses_valid_reads_and_routes_transport_to_c2c(self):
+        skill = ROOT / "skills/codex-lazier"
+        for name in ["SKILL.md", "references/codex.md", "references/web.md"]:
+            with self.subTest(name=name):
+                content = " ".join((skill / name).read_text(encoding="utf-8").split())
+                self.assertIn("guidance already read and still valid in this session", content)
+        web = (skill / "references/web.md").read_text(encoding="utf-8")
+        for reference in ["workflow.md", "workflow-web.md"]:
+            self.assertIn("/skill/references/" + reference, web)
+        self.assertIn("automatic `[C2C Handoff]` audits", web)
+        for transport_detail in ["C2C_CALLBACK", "capability", "timeoutMs", "callback register"]:
+            self.assertNotIn(transport_detail, web)
+        codex = (skill / "references/codex.md").read_text(encoding="utf-8")
+        self.assertIn("only the active host/mode reference", codex)
 
     def test_skill_links_must_resolve_in_the_installed_package(self):
         with TemporaryDirectory(prefix="codex-lazier-links-") as directory:

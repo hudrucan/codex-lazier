@@ -11,8 +11,9 @@ Read and apply the [shared policy](references/policy.md), then the host referenc
 - **Codex Local:** [Codex guidance](references/codex.md).
 - **ChatGPT Web:** [Web guidance](references/web.md).
 
-Load only the current host reference; disclose unreadable guidance without
-claiming its audit ran. Web needs no separate skill request. Keep MCP/Hub/workspace
+Load only the current host reference. Reuse guidance already read and still valid
+in this session; reload only changed or missing guidance. Disclose unreadable
+guidance without claiming its audit ran. Web needs no separate skill request. Keep MCP/Hub/workspace
 routing in Project Instructions without copying Lazier there.
 
 Follow the user's task; skill invocation alone does not request a simplicity review.
