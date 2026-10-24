@@ -1,85 +1,90 @@
-## codex-lazier v0.4.0 — ChatGPT Web
+## codex-lazier v0.5.0 — ChatGPT Web
 
 Read and apply the [shared policy](policy.md), including its optional Jev
 guidance, to coding tasks, planning, audits, reviews and Codex repo handoffs
 without a manual skill call.
 
 For Codex with ChatGPT, follow its [canonical workflow](https://github.com/hudrucan/codex-with-chatgpt/blob/main/skill/references/workflow.md).
-C2C owns repository access and handoff policy; Lazier adds no runtime dependency.
+C2C owns repository access, transport, callback schema and workflow contract;
+Lazier owns engineering policy and adds no runtime dependency.
 
 When drafting a C2C work prompt for Codex, choose the marker by intent.
 Use `[C2C Plan]`, `[C2C Task]`, `[C2C Fix]` or `[C2C Commit]` from C2C's
 contract, and place it on the exact first line. Do not mark ordinary Codex work
 prompts, replies or MCP-only source reads.
 Drafting a prompt does not send it or authorize execution.
-Copy the known `hubId` from the matching connector/workspace routing block into
-the prompt alongside those identities. Preserve it across Plan → Task/Fix and
-handoffs; do not use another routing block's owner or infer it from a chat URL.
-When `async=true` is requested, instruct Codex to pass that known `hubId` to the
-C2C controller. A selected ChatGPT thread is always trusted and reused immediately,
-with or without `hubId`: no Hub resolution, Project membership check or thread
-switch. Only without a selected thread may Codex use `hubId` to resolve the
-existing Project and open a new chat. If `hubId` is absent, a sole configured Hub
-is selected automatically; multiple Hubs require `HUB_SELECTION_REQUIRED`.
+Copy `hubId` from the matching connector/workspace routing block; never infer it
+from a chat URL or borrow another owner. Async requires that owner, the registered
+`workspaceId`, canonical `workspaceRoot` and stable controller `taskId`.
+Reuse a selected ChatGPT thread immediately, with or without `hubId`, without
+Hub/Project checks or switching. Only without one may C2C resolve an existing
+Project and open a chat. Its Project helper selects a sole configured Hub or
+requires `HUB_SELECTION_REQUIRED`; this cannot supply missing callback ownership.
+
+For `[C2C Plan]`, `[C2C Task]` and `[C2C Fix]`, carry forward only relevant,
+still-valid context, separating verified findings, assumptions and open questions:
+
+- **Plan:** goals, constraints, checked evidence, relevant options/trade-offs and
+  unresolved questions.
+- **Task:** settled Plan decisions (if any), verified findings with file/line,
+  repair direction and relevant validation. A Task does not require a prior Plan.
+- **Fix:** concrete findings from the latest audit, with file/line, evidence,
+  impact and proposed fix.
+
+Do not require Codex to re-audit everything Web checked; require inspection of
+current source before editing. When revising or continuing a prompt, preserve
+routing and an already-selected `async=true`. Never switch to manual, reuse a
+callback ticket or create a new task to evade limits. Add no workflow or state layer.
 
 A handoff whose first line is `[C2C Handoff]` triggers a C2C audit without a
 separate audit/skill request or Project Instructions update. The marker gates
 only automatic handoff audits; direct repo audit/planning may also use C2C.
 Markers grant no connector/workspace access.
-For no-code-change handoffs, verify relevant claims as C2C's contract requires;
-do not start a full code audit without a specific risk or request.
-For changed code with routed access, pass the explicit workspace: `git_status`/`git_diff` for
-uncommitted work, `git_log`/`git_show` for commits, then related source via
-`read_file`/`search_workspace`. Ask if routing is ambiguous; report unavailable
-C2C or incomplete evidence without claiming an audit occurred.
+Audit through routed MCP under C2C's contract, passing the explicit workspace on
+every read; verify the connector/workspace pair with `workspace_info` before first
+use. For no-code-change handoffs, check relevant claims only unless a specific
+risk/request warrants more. Trust validation for its tested revision; extra tests
+need a specific uncovered risk. Missing evidence or ambiguous routing is a
+limitation, not a defect or PASS. Disclose limits and request only missing evidence.
+A handoff requests neither a simplicity review nor another implementation cycle.
 
-ChatGPT thinks/plans/audits; Codex implements/tests; the local repo is the source
-of truth. Trust validation for the tested revision; request extra tests only for
-a specific uncovered risk. Follow C2C's contract for scope and findings. A handoff
-requests neither a simplicity review nor another Codex implementation cycle.
+For manual audits, include one ready-to-copy next prompt when appropriate:
+`[C2C Fix]` for supported in-scope findings, or `[C2C Commit]` when no findings or
+evidence gaps remain and verified Git status shows audited uncommitted changes.
+Use C2C's identity, revision, scope and constraints; Fix follows the continuity
+rule above, Commit preserves unrelated work and forbids pushing. With clean Git
+status, confirm completion without a prompt. Draft only; never automatically
+send, implement, commit or push.
 
-For manual C2C handoff audits, include the next step without waiting for another
-request:
+### Opt-in async C2C callbacks
 
-- **FAIL:** supported, actionable findings exist. Include one concise,
-  ready-to-copy prompt starting with `[C2C Fix]`, covering only those findings
-  within the audited scope.
-- **PASS with uncommitted changes:** the audited scope has no unresolved findings
-  or evidence gaps, and verified Git status shows audited changes awaiting commit.
-  Include one concise, ready-to-copy prompt starting with `[C2C Commit]` to commit
-  only those changes, preserving unrelated work and without pushing.
-- **PASS with clean Git status:** confirm completion and omit a follow-up prompt.
+Planning remains Web-first. Omitted `async` or `async=false` uses manual delivery
+without browser, Hub, claim or callback access. Explicit `async=true` requires
+C2C's live terminal loopback gate, runtime/owner checks, OAuth `audit.submit`
+consent and tool permission. Failure blocks sending; never automatically change
+settings, rollout, re-consent or switch transport.
 
-Use C2C's prompt contract for repository/workspace identity, audited revision,
-scope and constraints. A Fix prompt includes the findings' locations, evidence,
-impact and proposed fixes. Reuse valid validation; request extra checks only for
-a specific uncovered risk. Missing evidence or unknown Git status is a limitation,
-not a PASS or a defect; request only what is needed to resolve it. Generate prompts
-only; never send them or initiate implementation, commit or push automatically.
+For a newly sent `[C2C Handoff]` containing a `C2C_CALLBACK` ticket, audit through
+the routed MCP and complete the attempt only by calling `submit_audit_result`.
+Copy its `hubId`, `workspaceId`, `taskId`, `attemptId`, `handoffId` and `capability`
+unchanged; use only this new ticket, never history or ordinary replies. Follow
+C2C's callback schema and size/deadline limits. Submit a terminal result containing
+only `status`, `complete:true`, `summary` and `findings`:
 
-### Opt-in async C2C v1
+- `PASS`: completed MCP audit with sufficient evidence for the scope; `findings:[]`.
+- `FIX`: supported in-scope findings, each containing only repo-relative `file`,
+  positive integer `line`, `evidence` and concrete `fix`.
+- `BLOCKED`: missing/ambiguous routing or insufficient evidence; `findings:[]`.
+- `ERROR`: first repository-read MCP failure, with the actual error in `summary`
+  and `findings:[]`; do not retry or reuse old success.
 
-Planning remains Web-first. Omitted `async` means `async=false`: keep the manual
-workflow above. Only explicit `async=true` enables bounded browser delivery.
-For a newly sent `[C2C Handoff]` containing a `C2C_REQUEST` correlation line,
-follow C2C's canonical async contract and return only a terminal audit frame,
-without Markdown fences, ACKs, extra prose or Fix/Commit follow-up prompts:
+If the callback tool is unavailable, denied or fails, report the blocker and stop
+without retrying or substituting a chat result. Emit no legacy audit frames,
+ACKs or Fix/Commit prompts. Only an accepted callback and matching terminal
+receipt complete delivery.
 
-```text
-[C2C Audit v1]
-{"taskId":"<exact taskId>","attemptId":"<exact attemptId>","workspaceId":"<exact workspaceId>","handoffId":"<exact handoffId>","status":"PASS","complete":true,"summary":"MCP audit outcome and inspection limits.","findings":[]}
-[C2C Audit End v1]
-```
-
-Copy all four correlation values from this newly sent request, never history.
-Audit through the routed connector and explicit workspace; missing/ambiguous
-routing or insufficient evidence means `BLOCKED`. `PASS` requires a completed
-MCP source audit with sufficient evidence. `FIX` requires findings with
-repo-relative `file`, positive `line`, `evidence` and a concrete in-scope `fix`.
-Other statuses use `findings:[]`. On the first MCP failure immediately return
-`ERROR` with the actual error in `summary`; do not retry or return an old success.
-Emit `complete:true` and the closing marker only when the audit is terminal.
-Never accept stale, partial or late replies as evidence. Codex must verify local
-source has not drifted before auto-applying a FIX. The task permits at most three
-audits and two auto-fix rounds; lost/recreated handles fail closed per C2C's
-contract. Never automatically commit, push, rollout or expand scope.
+C2C owns transport and the bounded audit/fix loop: send each controller envelope
+once, reuse its sender/terminal/task, and fail closed on source drift, lost session
+or uncertain delivery. Follow its source-verification gate before fixes and its
+maximum three audits/two fixes; never resend or bypass a claim with another task.
+Async does not authorize commits, pushes, rollout or expanded scope.

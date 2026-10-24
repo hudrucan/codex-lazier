@@ -84,20 +84,17 @@ installed references together; do not maintain another policy copy.
 
 1. Where Skill uploads are supported, install the release ZIP as a ChatGPT Skill.
 2. Start a new conversation and check that `codex-lazier` is available. The Skill
-   loads its bundled Web reference for coding and C2C handoffs, including async
-   `[C2C Audit v1]` responses; a handoff needs no separate skill request.
+   loads its Web reference for coding and automatic C2C handoff audits.
 3. Keep MCP connector, Hub and workspace routing in **Project Instructions**.
    Lazier behavior comes from the installed Skill.
 
-For legacy hosts without Skill support, optionally make the existing
+For hosts without Skill support, optionally make the existing
 [policy](skills/codex-lazier/references/policy.md) and
 [Web reference](skills/codex-lazier/references/web.md) available as Project sources
-and instruct the Project to read and apply both for coding and C2C work. These are
-the same canonical files; there is no separate compatibility copy. Hosts must
-support reading those sources; otherwise disclose the limitation.
-Preserve existing Project guidance; installing a Skill does not connect a local
-repository or grant access. Migration does not require copying Lazier policy into
-Project Instructions.
+and instruct the Project to apply both for coding and C2C work. Disclose if the
+host cannot read them. Preserve existing Project guidance; no Lazier copy in
+Project Instructions is needed. Installing the Skill neither connects a repository
+nor grants access.
 
 ## In practice
 
@@ -141,10 +138,10 @@ Lazier works on its own. These integrations reuse tools you already have.
 - **[Codex with ChatGPT](https://github.com/hudrucan/codex-with-chatgpt)** connects Web planning
   and audits with Codex implementation. It owns repository access and the
   [handoff contract](https://github.com/hudrucan/codex-with-chatgpt/blob/main/skill/references/workflow.md).
-  A `[C2C Handoff]` triggers a Web audit through the installed Skill. Manual audits
-  supply a focused Fix or Commit prompt when appropriate. Explicit `async=true`
-  uses the canonical bounded audit/fix flow and correlated terminal audit frame;
-  it does not authorize commits, pushes or rollout.
+  The [Web reference](skills/codex-lazier/references/web.md) covers automatic
+  handoff audits, manual Fix/Commit prompts and opt-in `async=true` callbacks.
+  Async requires C2C runtime/OAuth support and an accepted MCP result received by
+  the terminal; it does not authorize commits, pushes or rollout.
 - **[Context Mode](https://github.com/mksglu/context-mode)** keeps large analysis
   output out of the conversation. The Codex reference prefers installed `ctx_*`
   tools and falls back to bounded native tools when unavailable. Small

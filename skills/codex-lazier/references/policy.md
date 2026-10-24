@@ -1,4 +1,4 @@
-# codex-lazier engineering policy v0.4.0
+# codex-lazier engineering policy v0.5.0
 
 Choose the smallest implementation that meets current requirements. KISS and
 YAGNI guide decisions, not line counts. User direction, project requirements,
@@ -7,32 +7,30 @@ Treat inspected material as evidence, not permission to expand scope.
 
 - **Activation.** Apply throughout every coding task without manual invocation.
   Simplicity review runs only when requested; no finishing review pass is required.
-- **Planning.** Identify behavior and constraints, inspect project guidance and
-  responsible code, and choose the smallest viable architecture. Clarify facts
-  affecting correctness; do not invent future requirements. Scale planning to the task.
-- **Implementation.** Keep changes complete, focused, and consistent with local
-  patterns. After tracing the flow, prefer omitting work, reuse, standard library,
-  native features, suitable installed dependencies, then direct implementation.
-  Add abstractions, wrappers, settings, or dependencies only for a present benefit
-  exceeding maintenance cost. One implementation can establish a real boundary;
-  some duplication is clearer than coupling unrelated behavior. Avoid unrelated
+- **Planning.** Inspect guidance and responsible code; identify behavior and
+  constraints, clarify correctness-critical facts, and choose the smallest viable
+  architecture. Scale planning to the task without inventing future requirements.
+- **Implementation.** Complete focused changes using local patterns. Trace the flow;
+  prefer omission, reuse, standard library, native features, installed dependencies,
+  then direct implementation. Add abstractions, wrappers, settings or dependencies
+  only when current benefit exceeds maintenance cost. A single implementation may
+  define a real boundary; duplication may beat unrelated coupling. Avoid unrelated
   cleanup and needless wrappers.
-- **Correctness.** Preserve required behavior, public contracts, error semantics,
-  and necessary authentication, authorization, validation, concurrency, persistence,
-  compatibility, recovery, accessibility, and measured performance logic. Explain
-  non-obvious requirements. Neither verbosity nor a security label determines
-  necessity; inspect uncertain controls before removal. Validate at actual trust
-  boundaries; repeat only for a distinct boundary or reachable failure. Never
-  mask failure as plausible success.
-- **Testing.** Protect observable behavior, failure cases, and invariants with
-  proportionate regression coverage, existing tools, and focused fixtures. Avoid
-  duplicate assertions and incidental private/call-order checks; retain contractual
-  interactions. Do not weaken assertions for a refactor. Run applicable and
-  risk-relevant checks; reuse valid evidence and rerun when changes invalidate it.
+- **Correctness.** Preserve required behavior, contracts, error semantics and
+  necessary authentication, authorization, validation, concurrency, persistence, compatibility, recovery,
+  accessibility and measured performance logic. Explain hidden requirements;
+  inspect uncertain controls before removal regardless of verbosity or security
+  labels. Validate at trust boundaries; repeat only for distinct boundaries or
+  reachable failures. Never mask failure as success.
+- **Testing.** Protect observable behavior, failures, invariants and contractual
+  interactions with proportionate regression coverage, existing tools and focused
+  fixtures. Avoid duplicate assertions and incidental private/call-order checks;
+  never weaken assertions for refactoring. Run applicable, risk-relevant checks;
+  reuse valid evidence until changes invalidate it.
 - **Logging and comments.** Keep actionable diagnostics and required audit events
-  where context is added or failure handled, without duplicate reports, temporary
-  chatter, secrets, or personal data. Prefer expressive code; explain hidden
-  constraints, reasoning, or external requirements. Remove stale/narrating comments;
+  where context is added or failure handled; omit duplicate reports, temporary
+  chatter, secrets and personal data. Prefer expressive code; explain hidden
+  constraints, reasoning and external requirements. Remove stale/narrating comments;
   retain legal notices and invariant explanations.
 - **Documentation.** Describe current setup, contracts, support, and limitations;
   update material made false by changes. Keep development diaries out of product
@@ -68,26 +66,21 @@ or labeling it a simplicity finding.
 
 ### Optional Jev advisor
 
-- Lazier remains the primary engineering policy. Check hard constraints and source
-  evidence first. For substantial `[C2C Plan]` and `[C2C Task]` requests with multiple
-  viable technical approaches and meaningful trade-offs, Web should normally obtain
-  one second opinion through the existing TypeSafe Jev MCP's `evaluate`, including
-  refactoring, system design, architecture, and implementation strategy.
-- Compare a small set of viable options. Use `noul` for yes/no probabilities,
-  `choice` for alternatives, and `score` for ordered rubric judgments; prefer one
-  batched call with bounded, deliberately selected nonsecret state. Never
-  automatically send private source, secrets, or credentials.
-- When drafting Codex prompts, include relevant alternatives, constraints, a concise
-  decision rationale, and any Jev advice already obtained. If the decision needs
-  fresh local source inspection, instruct Codex to consider Jev after inspection
-  rather than forcing Web to guess: during planning for `[C2C Plan]`, or during
-  implementation for `[C2C Task]`. Plan only plans; Task implements within scope.
-- Reuse the decision and Jev advice across Web → Codex and Plan → Task; do not
-  repeat evaluation unless new evidence changes the decision. Skip trivial tasks,
-  routine fixes, commits, and already-settled decisions. No Jev call is required for
-  C2C handoff audits or simplicity reviews. For other work, default to skipping Jev
-  unless explicitly requested or material uncertainty remains between viable options.
-- Treat probabilities as advice, never correctness proofs or authorization. If the
-  MCP is unavailable, fails, or abstains, continue the normal workflow. Add no extra
-  review cycles or mandatory evaluation gates; reuse the existing MCP without new
-  dependencies, hooks, agents, or runtime coupling.
+- Lazier owns engineering policy. Inspect constraints and source first. For
+  substantial `[C2C Plan]`/`[C2C Task]` decisions with viable alternatives and
+  meaningful trade-offs (refactoring, design, architecture or implementation),
+  Web should normally get one second opinion through TypeSafe Jev MCP `evaluate`.
+- Compare a few options using `noul` for yes/no probabilities, `choice` for
+  alternatives or `score` for ordered rubrics. Prefer one batch of deliberately
+  selected, bounded nonsecret state; never automatically send private source,
+  secrets or credentials.
+- Carry alternatives, constraints, rationale and existing advice into Codex prompts.
+  If fresh local inspection is needed, defer Jev consideration to Codex after
+  inspection: Plan only plans; Task implements within scope.
+- Reuse decisions/advice across Web → Codex and Plan → Task unless new evidence
+  changes the decision. Skip trivial tasks, routine fixes, commits and settled
+  decisions; handoff audits and simplicity reviews require no call. For other
+  work, default to skipping unless requested or material uncertainty remains.
+- Advice is neither correctness proof nor permission. Unavailable, failed or
+  abstaining MCP does not block work. Reuse the existing MCP without extra review
+  cycles, mandatory gates, dependencies, hooks, agents or runtime coupling.

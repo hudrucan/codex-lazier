@@ -13,7 +13,7 @@ from zipfile import BadZipFile, ZIP_DEFLATED, ZipFile, ZipInfo
 
 ROOT = Path(__file__).resolve().parent.parent
 SKILL = ROOT / "skills" / "codex-lazier"
-VERSION = "0.4.0"
+VERSION = "0.5.0"
 ARCHIVE = ROOT / "dist" / f"codex-lazier-{VERSION}.zip"
 
 

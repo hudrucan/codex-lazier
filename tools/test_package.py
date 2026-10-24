@@ -15,6 +15,32 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 class PackageValidationTests(unittest.TestCase):
+    def test_web_prompts_preserve_relevant_context_and_async_routing(self):
+        web = (ROOT / "skills/codex-lazier/references/web.md").read_text(encoding="utf-8")
+        continuity = web.split("For `[C2C Plan]`, `[C2C Task]` and `[C2C Fix]`", 1)[1]
+        continuity = " ".join(continuity.split("A handoff whose first line", 1)[0].split())
+        for intent, required in {
+            "Plan": ["goals", "constraints", "checked evidence", "options/trade-offs",
+                     "unresolved questions"],
+            "Task": ["settled Plan decisions (if any)", "verified findings", "file/line",
+                     "repair direction", "validation", "does not require a prior Plan"],
+            "Fix": ["latest audit", "file/line", "evidence", "impact", "proposed fix"],
+        }.items():
+            section = continuity.split(f"**{intent}:**", 1)[1].split(" - **", 1)[0]
+            for requirement in required:
+                with self.subTest(intent=intent, requirement=requirement):
+                    self.assertIn(requirement, section)
+        for requirement in [
+            "only relevant, still-valid context",
+            "separating verified findings, assumptions and open questions",
+            "Do not require Codex to re-audit everything Web checked",
+            "inspection of current source before editing",
+            "preserve routing and an already-selected `async=true`",
+            "Never switch to manual, reuse a callback ticket or create a new task to evade limits",
+        ]:
+            with self.subTest(requirement=requirement):
+                self.assertIn(requirement, continuity)
+
     def test_skill_links_must_resolve_in_the_installed_package(self):
         with TemporaryDirectory(prefix="codex-lazier-links-") as directory:
             root = Path(directory)

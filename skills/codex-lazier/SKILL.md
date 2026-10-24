@@ -1,6 +1,6 @@
 ---
 name: codex-lazier
-description: Apply Lazier defaults to coding, planning, audits and reviews. In ChatGPT Web, draft C2C work prompts and automatically audit [C2C Handoff] through MCP, including correlated async responses using [C2C Audit v1]. Check no-change handoffs proportionately. Direct repo audit/plan requests may also use C2C. Simplicity review only when requested. Excludes unrelated work.
+description: Apply Lazier to coding, planning, audits and reviews. Web drafts C2C prompts and automatically audits [C2C Handoff] through MCP, including C2C_CALLBACK via submit_audit_result. Check no-change handoffs proportionately; direct repo audits/plans may use C2C. Simplicity review only when requested. Excludes unrelated work.
 license: MIT
 ---
 
@@ -9,12 +9,10 @@ license: MIT
 Read and apply the [shared policy](references/policy.md), then the host reference:
 
 - **Codex Local:** [Codex guidance](references/codex.md).
-- **ChatGPT Web:** [Web guidance](references/web.md), including automatic
-  `[C2C Handoff]` audits and correlated `[C2C Audit v1]` responses.
+- **ChatGPT Web:** [Web guidance](references/web.md).
 
-Load only the current host's reference. If required guidance cannot be read,
-report the limitation; do not claim its audit ran. Web needs no separate skill
-request or Lazier copy in Project Instructions; keep existing MCP/Hub/workspace
-routing there.
+Load only the current host reference; disclose unreadable guidance without
+claiming its audit ran. Web needs no separate skill request. Keep MCP/Hub/workspace
+routing in Project Instructions without copying Lazier there.
 
 Follow the user's task; skill invocation alone does not request a simplicity review.
