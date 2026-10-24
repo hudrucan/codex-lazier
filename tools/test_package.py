@@ -2,6 +2,8 @@
 
 from pathlib import Path
 import re
+import json
+import hashlib
 import runpy
 import shutil
 import subprocess
@@ -12,6 +14,7 @@ from zipfile import ZipFile
 
 
 ROOT = Path(__file__).resolve().parent.parent
+C2C_SOURCE = None
 
 
 class PackageValidationTests(unittest.TestCase):
@@ -49,7 +52,7 @@ class PackageValidationTests(unittest.TestCase):
                 self.assertIn("guidance already read and still valid in this session", content)
         web = (skill / "references/web.md").read_text(encoding="utf-8")
         for reference in ["workflow.md", "workflow-web.md"]:
-            self.assertIn("/skill/references/" + reference, web)
+            self.assertIn("c2c/" + reference, web)
         self.assertIn("automatic `[C2C Handoff]` audits", web)
         for transport_detail in ["C2C_CALLBACK", "capability", "timeoutMs", "callback register"]:
             self.assertNotIn(transport_detail, web)
@@ -63,6 +66,7 @@ class PackageValidationTests(unittest.TestCase):
             shutil.copyfile(ROOT / "LICENSE", root / "LICENSE")
             (root / "tools").mkdir()
             shutil.copyfile(ROOT / "tools/package.py", root / "tools/package.py")
+            shutil.copyfile(ROOT / "tools/c2c-source.json", root / "tools/c2c-source.json")
             (root / "README.md").write_text("Repository-only documentation.\n", encoding="utf-8")
             manifest = root / "skills/codex-lazier/SKILL.md"
             original = manifest.read_text(encoding="utf-8")
@@ -70,7 +74,7 @@ class PackageValidationTests(unittest.TestCase):
                 with self.subTest(target=target):
                     manifest.write_text(original + f"\n[Reference]({target})\n", encoding="utf-8")
                     result = subprocess.run(
-                        [sys.executable, str(root / "tools/package.py"), "--build"],
+                        [sys.executable, str(root / "tools/package.py"), "--c2c-source", str(C2C_SOURCE), "--build"],
                         capture_output=True, text=True,
                     )
                     self.assertNotEqual(result.returncode, 0)
@@ -84,6 +88,7 @@ class PackageValidationTests(unittest.TestCase):
             shutil.copyfile(ROOT / "LICENSE", root / "LICENSE")
             (root / "tools").mkdir()
             shutil.copyfile(ROOT / "tools/package.py", root / "tools/package.py")
+            shutil.copyfile(ROOT / "tools/c2c-source.json", root / "tools/c2c-source.json")
             metadata = root / "skills/codex-lazier/agents/openai.yaml"
             original = metadata.read_text(encoding="utf-8")
             changed = re.sub(r'(?m)^  display_name:.*$', '  display_name: "Codex Lazier"', original)
@@ -101,7 +106,7 @@ class PackageValidationTests(unittest.TestCase):
                 with self.subTest(label=label):
                     metadata.write_text(content, encoding="utf-8")
                     result = subprocess.run(
-                        [sys.executable, str(root / "tools/package.py"), "--build"],
+                        [sys.executable, str(root / "tools/package.py"), "--c2c-source", str(C2C_SOURCE), "--build"],
                         capture_output=True, text=True,
                     )
                     self.assertEqual(result.returncode == 0, valid, result.stderr)
@@ -116,6 +121,7 @@ class PackageValidationTests(unittest.TestCase):
             shutil.copyfile(ROOT / "LICENSE", root / "LICENSE")
             (root / "tools").mkdir()
             shutil.copyfile(ROOT / "tools/package.py", root / "tools/package.py")
+            shutil.copyfile(ROOT / "tools/c2c-source.json", root / "tools/c2c-source.json")
             manifest = root / "skills/codex-lazier/SKILL.md"
             manifest.write_text(re.sub(
                 r"(?m)^description:.*$",
@@ -124,7 +130,7 @@ class PackageValidationTests(unittest.TestCase):
             ), encoding="utf-8")
 
             result = subprocess.run(
-                [sys.executable, str(root / "tools/package.py"), "--build"],
+                [sys.executable, str(root / "tools/package.py"), "--c2c-source", str(C2C_SOURCE), "--build"],
                 capture_output=True, text=True,
             )
             self.assertNotEqual(result.returncode, 0)
@@ -138,10 +144,11 @@ class PackageValidationTests(unittest.TestCase):
             shutil.copyfile(ROOT / "LICENSE", root / "LICENSE")
             (root / "tools").mkdir()
             shutil.copyfile(ROOT / "tools/package.py", root / "tools/package.py")
+            shutil.copyfile(ROOT / "tools/c2c-source.json", root / "tools/c2c-source.json")
 
             def run(*args):
                 return subprocess.run(
-                    [sys.executable, str(root / "tools/package.py"), *args],
+                    [sys.executable, str(root / "tools/package.py"), "--c2c-source", str(C2C_SOURCE), *args],
                     capture_output=True, text=True,
                 )
 
@@ -162,6 +169,10 @@ class PackageValidationTests(unittest.TestCase):
                     "codex-lazier/SKILL.md", "codex-lazier/agents/openai.yaml",
                     "codex-lazier/references/policy.md", "codex-lazier/references/web.md",
                     "codex-lazier/references/codex.md", "codex-lazier/LICENSE",
+                    "codex-lazier/provenance.json", "codex-lazier/references/c2c/LICENSE",
+                    "codex-lazier/references/c2c/workflow.md",
+                    "codex-lazier/references/c2c/workflow-web.md",
+                    "codex-lazier/references/c2c/workflow-async.md",
                 ])
                 for reference in ["policy.md", "codex.md", "web.md"]:
                     self.assertEqual(bundle.read("codex-lazier/references/" + reference),
@@ -198,5 +209,180 @@ class PackageValidationTests(unittest.TestCase):
             self.assertIn("checksum mismatch", corrupt.stderr)
 
 
+class PinnedContractTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = TemporaryDirectory(prefix="lazier-pin-")
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name) / "lazier"
+        shutil.copytree(ROOT, self.root, ignore=shutil.ignore_patterns("dist", ".git", "__pycache__"))
+        self.source = C2C_SOURCE
+
+    def run_package(self, *args):
+        return subprocess.run([sys.executable, str(self.root / "tools/package.py"),
+                               "--c2c-source", str(self.source), *args], capture_output=True, text=True)
+
+    def rejected(self, message):
+        result = self.run_package("--build")
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertIn(message.lower(), result.stderr.lower())
+        self.assertFalse((self.root / "dist").exists())
+
+    def test_pin_hash_allowlist_and_repository_are_fail_closed(self):
+        manifest = self.root / "tools/c2c-source.json"
+        original = json.loads(manifest.read_text())
+        for field, value, message in [
+            ("revision", "main", "Invalid pinned"),
+            ("revision", "0" * 40, "HEAD differs"),
+            ("repository", "https://github.com/another/repo", "Invalid pinned"),
+            ("files", {"../../secret": "0" * 64}, "Invalid pinned"),
+            ("files", {**original["files"], "LICENSE": "0" * 64}, "hash mismatch"),
+        ]:
+            with self.subTest(field=field, value=value):
+                manifest.write_text(json.dumps({**original, field: value}))
+                self.rejected(message)
+
+    def test_missing_changed_and_symlinked_source(self):
+        source = Path(self.temp.name) / "source"
+        subprocess.run(["git", "clone", "--quiet", "--shared", "--no-checkout", str(C2C_SOURCE), str(source)], check=True)
+        revision = json.loads((ROOT / "tools/c2c-source.json").read_text())["revision"]
+        subprocess.run(["git", "-C", str(source), "checkout", "--quiet", "--detach", revision], check=True)
+        subprocess.run(["git", "-C", str(source), "remote", "set-url", "origin",
+                        "https://github.com/hudrucan/codex-with-chatgpt.git"], check=True)
+        self.source = source
+        target = source / "skill/references/workflow.md"
+        original = target.read_bytes()
+        target.unlink()
+        self.rejected("Missing input")
+        target.write_bytes(original + b"\nchanged\n")
+        self.rejected("differs from pinned commit")
+        target.unlink()
+        target.symlink_to(C2C_SOURCE / "skill/references/workflow.md")
+        self.rejected("input")
+        target.unlink()
+        target.write_bytes(original)
+        refs = source / "skill/references"
+        refs.rename(source / "refs-original")
+        refs.symlink_to(source / "refs-original", target_is_directory=True)
+        self.rejected("Symlinked input")
+        refs.unlink()
+        (source / "refs-original").rename(refs)
+        subprocess.run(["git", "-C", str(source), "remote", "set-url", "origin",
+                        "https://github.com/unverified/other"], check=True)
+        self.rejected("identity mismatch")
+        self.source = source / "missing"
+        self.rejected("No such file")
+
+    def test_missing_guidance_links_anchors_and_symlinks(self):
+        target = self.root / "skills/codex-lazier/SKILL.md"
+        original = target.read_bytes()
+        for link in ["references/missing.md", "../../README.md", "references/codex.md#missing",
+                     "/etc/passwd", "%2e%2e/%2e%2e/README.md"]:
+            with self.subTest(link=link):
+                target.write_bytes(original + f"\n[Required]({link})\n".encode())
+                self.rejected("Broken package")
+        target.unlink()
+        self.rejected("Missing input")
+        target.symlink_to(ROOT / "skills/codex-lazier/SKILL.md")
+        self.rejected("input")
+
+    def test_metadata_version_and_license_cannot_disagree(self):
+        entry = self.root / "skills/codex-lazier/SKILL.md"
+        original = entry.read_text()
+        entry.write_text(original.replace("license: MIT", "license: Apache"))
+        self.rejected("License must match")
+        entry.write_text(original)
+        policy = self.root / "skills/codex-lazier/references/policy.md"
+        version = runpy.run_path(str(self.root / "tools/package.py"))["VERSION"]
+        policy.write_text(policy.read_text().replace(f"v{version}", "v0.0.0", 1))
+        self.rejected("Version heading mismatch")
+
+    def test_output_symlinks_cannot_redirect_build_or_check(self):
+        outside = Path(self.temp.name) / "outside"
+        outside.mkdir()
+        dist = self.root / "dist"
+        dist.symlink_to(outside, target_is_directory=True)
+        result = self.run_package("--build")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("escaping output", result.stderr)
+        self.assertEqual(list(outside.iterdir()), [])
+        dist.unlink()
+        self.assertEqual(self.run_package("--build").returncode, 0)
+        archive = next(dist.glob("*.zip"))
+        real = outside / archive.name
+        archive.rename(real)
+        archive.symlink_to(real)
+        for arguments in [(), ("--build",)]:
+            result = self.run_package(*arguments)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("escaping output", result.stderr)
+
+    def test_changed_bundled_contract_is_stale_even_with_valid_zip_crcs(self):
+        self.assertEqual(self.run_package("--build").returncode, 0)
+        archive = next((self.root / "dist").glob("*.zip"))
+        with ZipFile(archive) as bundle:
+            original = [(info, bundle.read(info.filename)) for info in bundle.infolist()]
+        with ZipFile(archive, "w") as bundle:
+            for info, content in original:
+                if info.filename == "codex-lazier/references/c2c/workflow.md":
+                    content += b"\nUnpinned rule.\n"
+                bundle.writestr(info, content)
+        with ZipFile(archive) as bundle:
+            self.assertIsNone(bundle.testzip())
+        result = self.run_package()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Stale archive content: codex-lazier/references/c2c/workflow.md", result.stderr)
+
+    def test_detached_artifact_closure_identity_license_crc_and_staleness(self):
+        result = self.run_package("--build")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        archive = next((self.root / "dist").glob("*.zip"))
+        before = archive.read_bytes()
+        module = runpy.run_path(str(self.root / "tools/package.py"))
+        with TemporaryDirectory(prefix="web-offline-") as directory:
+            with ZipFile(archive) as bundle:
+                bundle.extractall(directory)
+            installed = Path(directory)
+            files = {str(p.relative_to(installed)): p.read_bytes() for p in installed.rglob("*") if p.is_file()}
+            # Deliberately remove access to the copied source before validating the extraction.
+            shutil.rmtree(self.root / "skills")
+            module["validate_links"](files)
+            provenance = json.loads(files["codex-lazier/provenance.json"])
+            self.assertEqual(provenance["version"], module["VERSION"])
+            self.assertEqual(provenance["c2c"], json.loads((ROOT / "tools/c2c-source.json").read_text()))
+            self.assertEqual(set(provenance["sha256"]), set(files) - {"codex-lazier/provenance.json"})
+            for name, digest in provenance["sha256"].items():
+                self.assertEqual(hashlib.sha256(files[name]).hexdigest(), digest)
+            for name in ["workflow.md", "workflow-web.md", "workflow-async.md", "LICENSE"]:
+                source = C2C_SOURCE / ("LICENSE" if name == "LICENSE" else "skill/references/" + name)
+                self.assertEqual(files["codex-lazier/references/c2c/" + name], source.read_bytes())
+        shutil.copytree(ROOT / "skills", self.root / "skills")
+        self.assertEqual(self.run_package("--build").returncode, 0)
+        self.assertEqual(archive.read_bytes(), before)
+        archive.with_suffix(".provenance.json").write_text("{}")
+        self.assertIn("Stale archive provenance", self.run_package().stderr)
+        self.assertEqual(self.run_package("--build").returncode, 0)
+        with ZipFile(archive) as bundle:
+            info = bundle.infolist()[0]
+            offset = info.header_offset + 30 + len(info.filename.encode()) + len(info.extra)
+        corrupt = bytearray(archive.read_bytes())
+        corrupt[offset + info.compress_size // 2] ^= 1
+        archive.write_bytes(corrupt)
+        self.assertNotEqual(self.run_package().returncode, 0, "Corrupted payload must fail")
+
+    def test_ci_pin_matches_manifest_and_smoke_matrix_is_not_a_model_pass(self):
+        lock = json.loads((ROOT / "tools/c2c-source.json").read_text())
+        ci = (ROOT / ".github/workflows/ci.yml").read_text()
+        self.assertEqual(re.findall(r"ref: ([0-9a-f]{40})", ci), [lock["revision"]] * 2)
+        matrix = json.loads((ROOT / "tools/smoke-cases.json").read_text())
+        self.assertEqual(matrix["status"], "pending")
+        self.assertEqual(len({case["id"] for case in matrix["cases"]}), 8)
+        self.assertTrue(all(case["prompt"] and case["observe"] for case in matrix["cases"]))
+
+
 if __name__ == "__main__":
-    unittest.main()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--c2c-source", required=True, type=Path)
+    args, remaining = parser.parse_known_args()
+    C2C_SOURCE = args.c2c_source.resolve(strict=True)
+    unittest.main(argv=[sys.argv[0], *remaining])

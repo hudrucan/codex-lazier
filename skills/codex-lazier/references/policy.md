@@ -1,4 +1,4 @@
-# codex-lazier engineering policy v0.5.0
+# codex-lazier engineering policy v0.6.0
 
 Choose the smallest implementation that meets current requirements. KISS and
 YAGNI guide decisions, not line counts. User direction, project requirements,

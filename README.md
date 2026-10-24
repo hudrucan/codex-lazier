@@ -29,7 +29,7 @@ verify the behavior that matters.
 - **Keep it grounded.** Base decisions and review findings on source evidence.
   Run relevant checks and state what remains unverified.
 
-The package is instructions: one Skill, two host references, and a
+The package is instructions: one Skill, two host adapters, a pinned C2C Web snapshot, and a
 [shared policy](skills/codex-lazier/references/policy.md). No daemon, custom hook,
 or runtime dependency. Simplicity reviews run only when you ask.
 
@@ -52,12 +52,20 @@ On macOS, use `shasum -a 256 -c codex-lazier-*.sha256`. No release available yet
 
 #### Codex Local
 
-Extract into a skill directory supported by your host:
+Use one [host-supported discovery location](https://learn.chatgpt.com/docs/build-skills)
+for each Skill; the user scope shown here is `~/.agents/skills`:
 
 ```sh
 mkdir -p ~/.agents/skills
 unzip codex-lazier-*.zip -d ~/.agents/skills
 ```
+
+For an explicit update, replace the complete Skill directory at the installation
+you selected, after verifying the new archive. Inspect existing discovery roots
+first; do not install another copy under `~/.codex/skills` or a repository root.
+A legacy/custom location may remain when supported by that host: update it in
+place and keep any bootstrap bound to its actual path. Do not delete or migrate
+legacy copies automatically.
 
 Then start a new session and use `$codex-lazier` in your request.
 
@@ -88,10 +96,11 @@ installed references together; do not maintain another policy copy.
 3. Keep MCP connector, Hub and workspace routing in **Project Instructions**.
    Lazier behavior comes from the installed Skill.
 
-For hosts without Skill support, optionally make the existing
+For hosts without Skill support, make the complete extracted reference tree
+available offline (including `references/c2c/`), and optionally select the existing
 [policy](skills/codex-lazier/references/policy.md) and
 [Web reference](skills/codex-lazier/references/web.md) available as Project sources
-and instruct the Project to apply both for coding and C2C work. Disclose if the
+and instruct the Project to apply them with their task-specific references. Disclose if the
 host cannot read them. Preserve existing Project guidance; no Lazier copy in
 Project Instructions is needed. Installing the Skill neither connects a repository
 nor grants access.
@@ -137,7 +146,9 @@ Lazier works on its own. These integrations reuse tools you already have.
 
 - **[Codex with ChatGPT](https://github.com/hudrucan/codex-with-chatgpt)** connects Web planning
   and audits with Codex implementation. It owns repository access and the
-  [handoff contract](https://github.com/hudrucan/codex-with-chatgpt/blob/main/skill/references/workflow.md).
+  handoff contract. The Web ZIP bundles its pinned canonical files;
+  [source pin](tools/c2c-source.json) records the revision and hashes. Codex uses
+  the separately installed native C2C contract.
   The [Web reference](skills/codex-lazier/references/web.md) covers automatic
   handoff audits, manual Fix/Commit prompts and opt-in `async=true` callbacks.
   Async requires C2C runtime/OAuth support and an accepted MCP result received by
@@ -167,51 +178,42 @@ Context Mode installation alone does not prove routing or enforcement.
 
 ## Development
 
-Python 3.9+ and its standard library are enough. From a source checkout:
+Python 3.9+ and its standard library are enough. Supply an explicit local C2C
+checkout whose origin, HEAD and allowlisted inputs match [the pin](tools/c2c-source.json).
+Builds never fetch or execute C2C code, and never use a different working tree
+silently. With that checkout already available, all commands run offline:
 
 ```sh
-python3 tools/test_package.py
-python3 tools/package.py --build
-python3 tools/package.py
+python3 tools/test_package.py --c2c-source /path/to/pinned-c2c
+python3 tools/package.py --c2c-source /path/to/pinned-c2c --build
+python3 tools/package.py --c2c-source /path/to/pinned-c2c
 git diff --check
 ```
 
-No package installation or network access is needed. On Windows, use `py -3`.
-Build first on a fresh checkout; check mode validates an existing build without
-writing. ZIPs and checksums go into ignored `/dist/` and must not be committed.
+On Windows use `py -3`. ZIP, SHA-256 and provenance sidecar go into ignored
+`dist/`; do not commit generated packages. Each ZIP has eleven files: the six
+Lazier files (entrypoint, UI metadata, policy, two adapters, LICENSE), three
+unmodified C2C workflows under `references/c2c/`, their LICENSE, and
+`provenance.json` identifying package version, C2C repository/revision/hashes and
+all packaged input hashes. No protocol copies live in Lazier source. Presence
+in the ZIP does not mean a reference should be loaded.
 
-<details>
-<summary><strong>Package contract and release checks</strong></summary>
+Validation checks metadata/version, full local file/anchor closure, source identity,
+pinned bytes, symlinks/containment, CRCs, stale content/sidecars and reproducibility.
+Tests extract into an independent directory; reading Web guidance needs no source
+checkout, network or MCP. Model smoke cases are in [the smoke matrix](tools/smoke-cases.json);
+structural assertions do not prove model behavior. A new session using the actually
+installed artifact must observe smoke success before calling it daily-ready.
+Live MCP/terminal E2E acceptance is a separate result, never implied by packaging.
 
-Every ZIP contains exactly six files under `codex-lazier/`:
-
-```text
-SKILL.md
-agents/openai.yaml
-references/policy.md
-references/codex.md
-references/web.md
-LICENSE
-```
-
-Validation checks metadata, local links in the repository and installed package,
-archive members, CRCs, permissions, source identity, and SHA-256. Host guidance
-lives only in the Skill references; source and ZIP have no separate adapter tree. Tests cover
-package link resolution, reproducibility, stale archives, and mismatched release
-tags. These local checks do not prove live model or integration behavior.
-
-The [workflow](.github/workflows/ci.yml) runs on pull requests, pushes to
-`main`, and `v*` tags. It tests, builds, and compares reproducible output.
-Only a successful version-tag build can publish the ZIP and checksum to
-GitHub Releases. The tag must exactly match `v<VERSION>` in `tools/package.py`.
-For a new version, update that value and the policy/host-reference headings before
-tagging.
-
-CI is read-only. Only the tag-only release job has repository write permission.
-It uses SHA-pinned GitHub actions and the built-in token, with no custom secrets
-or publishing service.
-
-</details>
+The [CI workflow](.github/workflows/ci.yml) checks out C2C at the exact pinned
+revision with read-only permissions and no persisted credentials. It builds,
+checks reproducibility and validates downloaded release assets. Only the tag-only
+release job can publish ZIP, checksum and provenance. Tags must match
+`v<VERSION>` in `tools/package.py`; update that value and the three guidance
+headings together. Updating the C2C snapshot requires a verified full commit,
+allowlist hashes and preserved license; never pin uncommitted changes or mutable
+`main`/`latest`.
 
 Contributions should stay focused, preserve the Skill contract, and include
 checks appropriate to the change.
@@ -219,4 +221,4 @@ checks appropriate to the change.
 ## License
 
 [MIT](LICENSE). See [research and provenance](RESEARCH.md) for the references
-behind the policy. Upstream implementations are not bundled.
+behind the policy. The pinned C2C text and its MIT notice are bundled; no upstream executable code is bundled.
