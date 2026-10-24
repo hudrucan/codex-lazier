@@ -53,7 +53,7 @@ class PackageValidationTests(unittest.TestCase):
         self.assertIn("automatic `[C2C Handoff]` audits", web)
         for transport_detail in ["C2C_CALLBACK", "capability", "timeoutMs", "callback register"]:
             self.assertNotIn(transport_detail, web)
-        codex = (skill / "references/codex.md").read_text(encoding="utf-8")
+        codex = " ".join((skill / "references/codex.md").read_text(encoding="utf-8").split())
         self.assertIn("only the active host/mode reference", codex)
 
     def test_skill_links_must_resolve_in_the_installed_package(self):
