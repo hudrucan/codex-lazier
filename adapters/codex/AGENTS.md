@@ -23,8 +23,8 @@ C2C owns the contract; Lazier adds no runtime dependency.
   suitable installed dependencies, then direct implementation. Follow local
   conventions; avoid speculative abstractions and unrelated cleanup. A real
   boundary can justify a single implementation.
-- Prefer `rg` for ordinary searches; consider `ast-grep` for structural AST
-  queries that `rg` cannot express well.
+- Prefer `rg` for precise, bounded searches; consider `ast-grep` for structural
+  AST queries that `rg` cannot express well.
 - Preserve correctness, error semantics, and required security, concurrency,
   persistence, compatibility, and recovery invariants. Inspect uncertain controls
   before removing them; neither verbosity nor a security label decides necessity.
@@ -76,12 +76,13 @@ C2C owns the contract; Lazier adds no runtime dependency.
 
 ### Context Mode
 
-- Prefer the installed plugin's `ctx_*` tools for analysis reads, searches, logs,
-  diffs, verbose tests, and suitable tool output. Discover names as needed:
-  `ctx_execute_file` for files, `ctx_execute` for one operation,
-  `ctx_batch_execute` for related captures, `ctx_search` for indexed evidence.
-- Keep known-small observations, edits/mutations, and exact patch-source reads
-  direct when useful. Avoid per-command capability/size probes and extra indexing.
+- Prefer native tools for precise, bounded searches/reads, edits, and patches.
+  Prefer the installed plugin's `ctx_*` tools for large or unpredictable output,
+  verbose tests, and analysis producing such output.
+- Discover names as needed: `ctx_execute_file` for file analysis,
+  `ctx_execute` for one operation, and `ctx_batch_execute` for related large
+  captures. Use indexing and `ctx_search` when repeated retrieval adds value.
+  Avoid redundant indexing and per-command capability/size probes.
 - Retain full captured evidence; report exit status, failures, and relevant
   paths/lines. Do not truncate before capture, mask failures with filters, or
   re-index output already in context. Preserve access and secret boundaries.
