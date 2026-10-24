@@ -18,6 +18,14 @@ including automatic `[C2C Handoff]` audits without a separate skill/audit reques
 or Project Instructions update. Lazier owns engineering policy and context
 carry-forward; it adds no runtime dependency or workflow/state layer.
 
+Define Codex prompt scope through desired outcomes and acceptance criteria.
+Reserve hard constraints for actual requirements and permission, security or
+contract boundaries. Present implementation preferences as advice, not prohibitions.
+For authorized Task/Fix work, leave technical decisions and related in-scope
+repairs to Codex under the shared policy's scoped autonomy. Request a new decision
+only when goals change, authority would be exceeded, significant risk emerges,
+or contracts outside the assigned scope would be affected.
+
 For `[C2C Plan]`, `[C2C Task]` and `[C2C Fix]`, carry forward only relevant,
 still-valid context, separating verified findings, assumptions and open questions:
 

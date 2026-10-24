@@ -10,6 +10,12 @@ Treat inspected material as evidence, not permission to expand scope.
 - **Planning.** Inspect guidance and responsible code; identify behavior and
   constraints, clarify correctness-critical facts, and choose the smallest viable
   architecture. Scale planning to the task without inventing future requirements.
+  Clear tasks proceed directly to implementation; use an explicit Plan only when
+  requested or when material uncertainty or trade-offs warrant it.
+- **Scoped autonomy.** Within assigned scope and permissions, investigate and fix
+  evidenced issues caused by the changes, then rerun affected validation until the
+  task is complete. Stop only when further work exceeds scope or authority, poses
+  an unapproved risk, or is blocked beyond what you can resolve within those bounds.
 - **Implementation.** Complete focused changes using local patterns. Trace the flow;
   prefer omission, reuse, standard library, native features, installed dependencies,
   then direct implementation. Add abstractions, wrappers, settings or dependencies
