@@ -12,6 +12,15 @@ Use `[C2C Plan]`, `[C2C Task]`, `[C2C Fix]` or `[C2C Commit]` from C2C's
 contract, and place it on the exact first line. Do not mark ordinary Codex work
 prompts, replies or MCP-only source reads.
 Drafting a prompt does not send it or authorize execution.
+Copy the known `hubId` from the matching connector/workspace routing block into
+the prompt alongside those identities. Preserve it across Plan → Task/Fix and
+handoffs; do not use another routing block's owner or infer it from a chat URL.
+When `async=true` is requested, instruct Codex to pass that known `hubId` to the
+C2C controller. A selected ChatGPT thread is always trusted and reused immediately,
+with or without `hubId`: no Hub resolution, Project membership check or thread
+switch. Only without a selected thread may Codex use `hubId` to resolve the
+existing Project and open a new chat. If `hubId` is absent, a sole configured Hub
+is selected automatically; multiple Hubs require `HUB_SELECTION_REQUIRED`.
 
 A handoff whose first line is `[C2C Handoff]` triggers a C2C audit without a
 separate audit/skill request or Project Instructions update. The marker gates
