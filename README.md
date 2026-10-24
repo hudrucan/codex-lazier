@@ -1,6 +1,6 @@
 # codex-lazier
 
-Version 0.3.0. Always-on engineering defaults for Codex and ChatGPT Web:
+Version 0.4.0. Always-on engineering defaults for Codex and ChatGPT Web:
 build the smallest complete solution while preserving correctness and required
 safeguards. Simplicity review is optional, with no finishing review pass.
 
@@ -78,7 +78,7 @@ git diff --check
 ```
 
 On Windows use `py -3`. Build mode writes
-`dist/codex-lazier-0.3.0.zip` and its `.sha256` sidecar; check mode writes nothing.
+`dist/codex-lazier-0.4.0.zip` and its `.sha256` sidecar; check mode writes nothing.
 The six members under `codex-lazier/` are `SKILL.md`, `agents/openai.yaml`,
 `references/policy.md`, `LICENSE`, and both adapters. Bundled adapters do not
 install themselves as active instructions.

@@ -1,4 +1,4 @@
-## codex-lazier v0.3 — Codex
+## codex-lazier v0.4.0 — Codex
 
 Apply these defaults to every coding task without a manual skill call. User
 direction, project requirements, and platform security take precedence; no
@@ -50,19 +50,29 @@ C2C owns the contract; Lazier adds no runtime dependency.
 
 ### Optional Jev advisor
 
-- Lazier remains the primary engineering policy. Default to skipping the existing
-  TypeSafe Jev MCP. Consider `evaluate` only when explicitly requested or material
-  uncertainty remains between viable alternatives, after checking hard constraints
-  and available evidence.
-- Use `noul` for yes/no probabilities, `choice` for alternatives, and `score` for
-  ordered rubric judgments; prefer one batched call with bounded, deliberately
-  selected nonsecret state. Never automatically send private source, secrets, or
-  credentials.
+- Lazier remains the primary engineering policy. Check hard constraints and source
+  evidence first. For substantial `[C2C Plan]` and `[C2C Task]` requests with multiple
+  viable technical approaches and meaningful trade-offs, Web should normally obtain
+  one second opinion through the existing TypeSafe Jev MCP's `evaluate`, including
+  refactoring, system design, architecture, and implementation strategy.
+- Compare a small set of viable options. Use `noul` for yes/no probabilities,
+  `choice` for alternatives, and `score` for ordered rubric judgments; prefer one
+  batched call with bounded, deliberately selected nonsecret state. Never
+  automatically send private source, secrets, or credentials.
+- When drafting Codex prompts, include relevant alternatives, constraints, a concise
+  decision rationale, and any Jev advice already obtained. If the decision needs
+  fresh local source inspection, instruct Codex to consider Jev after inspection
+  rather than forcing Web to guess: during planning for `[C2C Plan]`, or during
+  implementation for `[C2C Task]`. Plan only plans; Task implements within scope.
+- Reuse the decision and Jev advice across Web → Codex and Plan → Task; do not
+  repeat evaluation unless new evidence changes the decision. Skip trivial tasks,
+  routine fixes, commits, and already-settled decisions. No Jev call is required for
+  C2C handoff audits or simplicity reviews. For other work, default to skipping Jev
+  unless explicitly requested or material uncertainty remains between viable options.
 - Treat probabilities as advice, never correctness proofs or authorization. If the
-  MCP is unavailable, fails, or abstains, continue the normal workflow. No Jev call
-  is required for routine coding, C2C handoff audits, fixes, commits, or simplicity
-  reviews. Add no extra review cycles or mandatory evaluation gates; reuse the
-  existing MCP without new dependencies, hooks, agents, or runtime coupling.
+  MCP is unavailable, fails, or abstains, continue the normal workflow. Add no extra
+  review cycles or mandatory evaluation gates; reuse the existing MCP without new
+  dependencies, hooks, agents, or runtime coupling.
 
 ### Context Mode
 
