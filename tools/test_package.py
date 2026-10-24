@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import re
+import runpy
 import shutil
 import subprocess
 import sys
@@ -85,7 +86,15 @@ class PackageValidationTests(unittest.TestCase):
                     capture_output=True, text=True,
                 )
 
-            built = run("--build")
+            version = runpy.run_path(str(root / "tools/package.py"))["VERSION"]
+            for tag in ["v0.0.0", version, f"v{version}-rc.1"]:
+                with self.subTest(tag=tag):
+                    rejected = run("--build", "--tag", tag)
+                    self.assertNotEqual(rejected.returncode, 0)
+                    self.assertIn("Release tag mismatch", rejected.stderr)
+                    self.assertFalse((root / "dist").exists(), "Reject mismatched tags before building")
+
+            built = run("--build", "--tag", f"v{version}")
             self.assertEqual(built.returncode, 0, built.stderr)
             archive = next((root / "dist").glob("*.zip"))
             before = archive.read_bytes()

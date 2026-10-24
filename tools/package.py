@@ -12,7 +12,8 @@ from zipfile import BadZipFile, ZIP_DEFLATED, ZipFile, ZipInfo
 
 ROOT = Path(__file__).resolve().parent.parent
 SKILL = ROOT / "skills" / "codex-lazier"
-ARCHIVE = ROOT / "dist" / "codex-lazier-0.4.0.zip"
+VERSION = "0.4.0"
+ARCHIVE = ROOT / "dist" / f"codex-lazier-{VERSION}.zip"
 
 
 def require(condition, message):
@@ -113,7 +114,11 @@ def validate_archive(files):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build", action="store_true", help="Rebuild only the ZIP and checksum in dist/")
+    parser.add_argument("--tag", help="Require an exact v<package version> release tag")
     args = parser.parse_args()
+    if args.tag is not None:
+        require(args.tag == f"v{VERSION}",
+                f"Release tag mismatch: expected v{VERSION}, got {args.tag}")
     validate_sources()
     files = source_files()
     if args.build:

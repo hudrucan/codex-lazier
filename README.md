@@ -1,74 +1,160 @@
+<div align="center">
+
 # codex-lazier
 
-Version 0.4.0. Always-on engineering defaults for Codex and ChatGPT Web:
-build the smallest complete solution while preserving correctness and required
-safeguards. Simplicity review is optional, with no finishing review pass.
+**Small changes. Complete solutions.**
 
-## Activation
+Engineering defaults that keep Codex and ChatGPT focused on simple, correct work.
 
-The [canonical policy](skills/codex-lazier/references/policy.md) defines shared
-behavior. The adapters define platform activation:
+[![CI](https://github.com/hudrucan/codex-lazier/actions/workflows/ci.yml/badge.svg)](https://github.com/hudrucan/codex-lazier/actions/workflows/ci.yml)
+[![Runtime dependencies: none](https://img.shields.io/badge/runtime_dependencies-none-3b82f6)](#why-lazier)
+[![License: MIT](https://img.shields.io/badge/license-MIT-64748b)](LICENSE)
 
-- [Codex](adapters/codex/AGENTS.md): engineering defaults plus preferences for
-  the installed Context Mode plugin; reads the local C2C contract before each
-  C2C task's final handoff.
-- [ChatGPT Web](adapters/chatgpt/project-instructions.md): Lazier + Codex with ChatGPT,
-  without added runtime dependencies or tool integrations.
+[Quick start](#quick-start) · [Examples](#in-practice) · [Integrations](#optional-integrations) · [Development](#development)
 
-This repo's [AGENTS.md](AGENTS.md) loads the Codex adapter. Elsewhere, merge the
-appropriate adapter into active Codex `AGENTS.md` or Web Project Instructions,
-preserving existing guidance. For personal Codex defaults, use
-`CODEX_HOME/AGENTS.md` (normally `~/.codex/AGENTS.md`); check for an active
-`AGENTS.override.md`. Start a new chat and verify loaded instructions.
+</div>
 
-Install [the skill](skills/codex-lazier/SKILL.md) in a discovery location supported
-by the host, such as `~/.agents/skills/` for Codex, or upload the ZIP where Web
-supports skills. Its [metadata](skills/codex-lazier/agents/openai.yaml) retains
-implicit invocation. The description covers Codex handoffs, planning, audits and
-reviews. When available to Web with C2C routing already configured, a handoff
-starting with `[C2C Handoff]` triggers a Git/source audit without a separate audit request or updates to
-each Project's Instructions. Discovery
-does not guarantee host invocation or grant connector access. A `$codex-lazier`
-implementation request remains implementation, not a request for review.
+## Why Lazier?
 
-After a C2C handoff audit, Web supplies the next step: a ready-to-copy
-`[C2C Fix]` prompt for actionable findings, a `[C2C Commit]` prompt for a PASS
-with audited uncommitted changes, or completion with no prompt for a PASS with
-clean Git status. Incomplete evidence is reported as a limitation. Prompts do
-not execute automatically; see the [Web skill guidance](skills/codex-lazier/SKILL.md#chatgpt-web-handoff-trigger).
+A change should stay proportional to the problem it solves.
 
-Web follows the [canonical C2C workflow](https://github.com/hudrucan/codex-with-chatgpt/blob/main/skill/references/workflow.md). Project
-instructions grant no local repository access and inherit no Codex runtime or
-hooks. They do not change Codex with ChatGPT architecture, code, or license.
+Lazier is a portable engineering policy for **Codex Local** and **ChatGPT Web**.
+It guides agents to understand the existing system, make a focused change, and
+verify the behavior that matters.
 
-## Context Mode on Codex
+- **Keep it simple.** Reuse existing tools and patterns. Add machinery when a
+  current requirement justifies its cost.
+- **Keep it correct.** Preserve contracts, failure handling, security boundaries,
+  and recovery behavior. Necessary safeguards stay.
+- **Keep it grounded.** Base decisions and review findings on source evidence.
+  Run relevant checks and state what remains unverified.
 
-Reuse the installed plugin; do not copy its code/hooks or register another MCP
-server. Verify `codex plugin list --json`, responding `ctx_*` tools,
-`ctx_doctor`, hook trust, and a harmless routing probe. Installation or a doctor
-PASS alone does not prove interception. Trust review remains the host's job.
+The package is instructions: one Skill, two adapters, and a
+[shared policy](skills/codex-lazier/references/policy.md). No daemon, custom hook,
+or runtime dependency. Simplicity reviews run only when you ask.
 
-Runtime limits:
+## Quick start
 
-- In v1.0.169, selected HTTP/build branches emit deny/rewrite decisions; ordinary
-  reads, searches, and diffs receive advisory guidance. Host-supported decisions
-  are enforced; following advisory instructions remains the model's responsibility.
-  Lazier adds no enforcement runtime.
-- SQLite must support FTS5. Node version alone is insufficient; a working built-in
-  backend avoids the native addon. Dependencies installed only inside versioned
-  plugin cache can disappear when that cache is refreshed.
-- Doctor may warn because plugin listing omits the runtime root even when the
-  plugin is enabled and routing works. `ctx_stats` contains cumulative estimates;
-  its host labels, pricing, and compaction claims are not verified benchmarks.
+### 1. Get the package
 
-Follow the adapter's tool preferences and evidence rules. Small observations,
-edits, and exact patch-source reads may stay native. On failure, report the limit
-once and continue with bounded native tools under the same permissions.
+Download the ZIP and its matching `.sha256` file from
+**[GitHub Releases](https://github.com/hudrucan/codex-lazier/releases)**.
+Put the two files from the same release in an otherwise empty directory:
 
-## Package and validate
+```sh
+sha256sum --check codex-lazier-*.sha256
+```
 
-Original material remains [MIT licensed](LICENSE); no runtime dependency is added
-by Lazier. Python 3.9+ and its standard library are used only for packaging.
+On macOS, use `shasum -a 256 -c codex-lazier-*.sha256`. No release available yet?
+[Build from source](#development).
+
+### 2. Choose your host
+
+#### Codex Local
+
+Extract into a skill directory supported by your host:
+
+```sh
+mkdir -p ~/.agents/skills
+unzip codex-lazier-*.zip -d ~/.agents/skills
+```
+
+Then start a new session and use `$codex-lazier` in your request.
+
+<details>
+<summary><strong>Apply Lazier automatically to coding tasks</strong></summary>
+
+Merge the bundled `adapters/codex/AGENTS.md` into your repository's `AGENTS.md`,
+or your Codex home's `AGENTS.md` (normally `~/.codex/AGENTS.md`).
+Preserve existing guidance and check for an active `AGENTS.override.md`.
+
+Start a new session and ask Codex to summarize its loaded instructions.
+Installing the Skill alone does not activate persistent instructions.
+The [Codex adapter](adapters/codex/AGENTS.md) includes the engineering defaults
+and optional integration guidance.
+
+</details>
+
+#### ChatGPT Web
+
+1. Merge the [Web adapter](adapters/chatgpt/project-instructions.md) into your
+   **Project Instructions**.
+2. Where Skill uploads are supported, upload the release ZIP for on-demand use.
+3. Start a new conversation and check which instructions apply.
+
+Preserve existing Project guidance. Uploading a Skill does not itself activate
+Project Instructions or connect a local repository.
+
+## In practice
+
+### Implement a change
+
+```text
+Use $codex-lazier to add pagination to this endpoint.
+Follow the existing API conventions and test the relevant behavior.
+```
+
+The agent traces the current flow, chooses a focused implementation, and
+reports the checks it actually ran. No automatic simplicity-review cycle.
+
+### Ask for a simplicity review
+
+```text
+Review this diff for unnecessary complexity.
+Report supported simplifications; do not edit.
+```
+
+Findings need evidence and a smaller alternative that preserves required
+behavior. Justified code can stay unchanged.
+
+### Delegate through C2C
+
+```text
+[C2C Task]
+Repo: <repository>; workspace: <registered workspace ID>.
+Add pagination using the existing API conventions.
+Run focused validation. Do not commit or push.
+```
+
+With C2C configured, Web plans and audits while Codex implements and tests
+against local source. `[C2C Plan]` only plans; `[C2C Task]` implements within
+scope. Markers and drafted prompts do not execute work or grant permissions.
+
+## Optional integrations
+
+Lazier works on its own. These integrations reuse tools you already have.
+
+- **[Codex with ChatGPT](https://github.com/hudrucan/codex-with-chatgpt)** connects Web planning
+  and audits with Codex implementation. It owns repository access and the
+  [handoff contract](https://github.com/hudrucan/codex-with-chatgpt/blob/main/skill/references/workflow.md).
+  A `[C2C Handoff]` triggers a Web audit; the adapter supplies a focused Fix or
+  Commit prompt when appropriate.
+- **[Context Mode](https://github.com/mksglu/context-mode)** keeps large analysis
+  output out of the conversation. The Codex adapter prefers installed `ctx_*`
+  tools and falls back to bounded native tools when unavailable. Small
+  observations and edits can stay direct.
+- **[TypeSafe Jev](https://docs.typesafe.ai/introduction/coding-agents)** offers
+  a second opinion on substantial C2C decisions with meaningful technical
+  trade-offs. Web normally asks once after inspecting constraints and evidence,
+  or defers to Codex when fresh local inspection is needed. Reuse the advice;
+  skip trivial or settled decisions.
+
+Jev remains advisory. Never automatically forward private source, secrets,
+or credentials. Unavailable or abstaining advice does not block the task.
+
+## What to expect
+
+Lazier guides engineering judgment; it does not enforce behavior or guarantee
+correctness. User instructions, project requirements, and platform security take
+precedence. A successful build or a model probability is not a correctness proof.
+
+Host support determines Skill discovery and invocation. Optional integrations
+need their own configuration and permissions; installing Lazier grants neither.
+Context Mode installation alone does not prove routing or enforcement.
+
+## Development
+
+Python 3.9+ and its standard library are enough. From a source checkout:
 
 ```sh
 python3 tools/test_package.py
@@ -77,20 +163,45 @@ python3 tools/package.py
 git diff --check
 ```
 
-On Windows use `py -3`. Build mode writes
-`dist/codex-lazier-0.4.0.zip` and its `.sha256` sidecar; check mode writes nothing.
-The six members under `codex-lazier/` are `SKILL.md`, `agents/openai.yaml`,
-`references/policy.md`, `LICENSE`, and both adapters. Bundled adapters do not
-install themselves as active instructions.
+No package installation or network access is needed. On Windows, use `py -3`.
+Build first on a fresh checkout; check mode validates an existing build without
+writing. ZIPs and checksums go into ignored `/dist/` and must not be committed.
 
-The [regression tests](tools/test_package.py) exercise metadata rejection,
-adapter/license inclusion, reproducibility, stale sources, and checksum failures.
-The [validator](tools/package.py) also checks local links, exact archive members,
-CRCs, file modes, and source identity. These checks do not prove model compliance
-or live Web compatibility; Web behavior remains untested.
+<details>
+<summary><strong>Package contract and release checks</strong></summary>
 
-[Research notes](RESEARCH.md) retain source/license provenance. Platform references:
-[AGENTS.md loading](https://developers.openai.com/cookbook/examples/gpt-5/codex_prompting_guide),
-[skill metadata](https://developers.openai.com/plugins/deploy/submission-errors),
-[plugin hooks](https://developers.openai.com/plugins/build/plugins),
-[Project instructions](https://learn.chatgpt.com/docs/projects).
+Every ZIP contains exactly six files under `codex-lazier/`:
+
+```text
+SKILL.md
+agents/openai.yaml
+references/policy.md
+adapters/codex/AGENTS.md
+adapters/chatgpt/project-instructions.md
+LICENSE
+```
+
+Validation checks metadata, local links, archive members, CRCs, permissions,
+source identity, and SHA-256. Tests cover reproducibility, stale archives, and
+mismatched release tags. Live model and integration behavior are not tested.
+
+The [workflow](.github/workflows/ci.yml) runs on pull requests, pushes to
+`main`, and `v*` tags. It tests, builds, and compares reproducible output.
+Only a successful version-tag build can publish the ZIP and checksum to
+GitHub Releases. The tag must exactly match `v<VERSION>` in `tools/package.py`.
+For a new version, update that value and the policy/adapter headings before
+tagging.
+
+CI is read-only. Only the tag-only release job has repository write permission.
+It uses SHA-pinned GitHub actions and the built-in token, with no custom secrets
+or publishing service.
+
+</details>
+
+Contributions should stay focused, preserve the Skill contract, and include
+checks appropriate to the change.
+
+## License
+
+[MIT](LICENSE). See [research and provenance](RESEARCH.md) for the references
+behind the policy. Upstream implementations are not bundled.
