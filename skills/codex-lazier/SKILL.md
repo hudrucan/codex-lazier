@@ -15,7 +15,7 @@ For Web C2C prompt drafting or handoff audits, also read the bundled
 [common contract](references/c2c/workflow.md); audits additionally read the
 [receiver](references/c2c/workflow-web.md). Do not load sender or setup for Web.
 Codex C2C uses the installed native common contract and, only for explicit
-`async=true`, its native sender as directed by the Codex reference; never mix
+`auto=true`, its native sender as directed by the Codex reference; never mix
 that native contract with the bundled Web snapshot. Ordinary coding loads only
 policy and the current host adapter.
 

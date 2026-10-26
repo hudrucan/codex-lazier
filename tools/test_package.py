@@ -38,7 +38,7 @@ class PackageValidationTests(unittest.TestCase):
             "separating verified findings, assumptions and open questions",
             "Do not require Codex to re-audit everything Web checked",
             "inspection of current source before editing",
-            "Preserve C2C routing and an already-selected `async=true`",
+            "Preserve C2C routing and an already-selected `auto=true`",
             "Keep settled decisions/advice unless new evidence invalidates them",
         ]:
             with self.subTest(requirement=requirement):
@@ -58,6 +58,30 @@ class PackageValidationTests(unittest.TestCase):
             self.assertNotIn(transport_detail, web)
         codex = " ".join((skill / "references/codex.md").read_text(encoding="utf-8").split())
         self.assertIn("only the active host/mode reference", codex)
+
+    def test_automatic_opt_in_and_manual_fallback_smoke_contract(self):
+        skill = ROOT / "skills/codex-lazier"
+        for relative in ["SKILL.md", "references/codex.md", "references/web.md"]:
+            text = (skill / relative).read_text(encoding="utf-8")
+            self.assertIn("auto=true", text)
+            self.assertNotRegex(text, r"async=(?:true|false)|permission probe|preflight evidence")
+        for host in ["codex", "web"]:
+            text = (skill / f"references/{host}.md").read_text(encoding="utf-8")
+            self.assertIn("manual fallback", text)
+            self.assertIn("invent", text)
+        matrix = json.loads((ROOT / "tools/smoke-cases.json").read_text())
+        cases = {case["id"]: case for case in matrix["cases"]}
+        self.assertNotIn("auto=", cases["plan"]["prompt"])
+        self.assertIn("auto=false", cases["manual"]["prompt"])
+        for case_id in ["auto", "auto-register-failure", "auto-uncertain-send", "auto-callback-failure"]:
+            self.assertIn("auto=true", cases[case_id]["prompt"])
+        for case_id, delivery in [("auto-register-failure", "not_sent"),
+                                  ("auto-uncertain-send", "uncertain"),
+                                  ("auto-callback-failure", "sent")]:
+            observations = " ".join(cases[case_id]["observe"])
+            self.assertIn(delivery, observations)
+            self.assertIn("outside", observations)
+            self.assertIn("handoff", observations.lower())
 
     def test_skill_links_must_resolve_in_the_installed_package(self):
         with TemporaryDirectory(prefix="codex-lazier-links-") as directory:
@@ -375,7 +399,7 @@ class PinnedContractTests(unittest.TestCase):
         self.assertEqual(re.findall(r"ref: ([0-9a-f]{40})", ci), [lock["revision"]] * 2)
         matrix = json.loads((ROOT / "tools/smoke-cases.json").read_text())
         self.assertEqual(matrix["status"], "pending")
-        self.assertEqual(len({case["id"] for case in matrix["cases"]}), 8)
+        self.assertEqual(len({case["id"] for case in matrix["cases"]}), 11)
         self.assertTrue(all(case["prompt"] and case["observe"] for case in matrix["cases"]))
 
 

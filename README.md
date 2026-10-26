@@ -1,6 +1,6 @@
 <div align="center">
 
-# codex-lazier
+# codex-lazier 0.7.0
 
 **Small changes. Complete solutions.**
 
@@ -150,9 +150,11 @@ Lazier works on its own. These integrations reuse tools you already have.
   [source pin](tools/c2c-source.json) records the revision and hashes. Codex uses
   the separately installed native C2C contract.
   The [Web reference](skills/codex-lazier/references/web.md) covers automatic
-  handoff audits, manual Fix/Commit prompts and opt-in `async=true` callbacks.
-  Async requires C2C runtime/OAuth support and an accepted MCP result received by
-  the terminal; it does not authorize commits, pushes or rollout.
+  handoff audits, manual Fix/Commit prompts and opt-in `auto=true` delivery;
+  omitted `auto` or `auto=false` stays manual. Automatic delivery follows C2C's
+  manual fallback rules on failure and requires runtime/OAuth support and an
+  accepted MCP result received by the terminal; it does not authorize commits,
+  pushes or rollout.
 - **[Context Mode](https://github.com/mksglu/context-mode)** keeps large analysis
   output out of the conversation. The Codex reference prefers installed `ctx_*`
   tools and falls back to bounded native tools when unavailable. Small

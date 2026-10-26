@@ -1,4 +1,4 @@
-## codex-lazier v0.6.0 — ChatGPT Web
+## codex-lazier v0.7.0 — ChatGPT Web
 
 Apply the [shared policy](policy.md), including optional Jev guidance, to coding,
 planning, audits, reviews and Codex repo handoffs without a manual skill call.
@@ -38,5 +38,8 @@ still-valid context, separating verified findings, assumptions and open question
 
 Do not require Codex to re-audit everything Web checked; require inspection of
 current source before editing. Keep settled decisions/advice unless new evidence
-invalidates them. Preserve C2C routing and an already-selected `async=true` under
+invalidates them. Preserve C2C routing and an already-selected `auto=true` under
 its contract. Keep handoffs/audit results short without cutting necessary evidence.
+
+Follow C2C's manual fallback rules when automatic delivery fails; do not retry or
+invent audit acceptance.

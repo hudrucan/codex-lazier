@@ -1,10 +1,10 @@
 {
   "repository": "https://github.com/hudrucan/codex-with-chatgpt",
-  "revision": "3b115227ac7d1d4a7ee694a1cb1a7113e0c1063e",
+  "revision": "ab70efb9bc166196e43879407ace6f9228840a8b",
   "files": {
-    "skill/references/workflow.md": "f847506085106ea0cfa2df289f7f681e2ec950cf3ab3365d4abc67c7c61626f8",
-    "skill/references/workflow-web.md": "97bfdb11a86f3f463eb2bdf9d614e503287f94ed37bef5ad0dab6ff3a89f29fa",
-    "skill/references/workflow-async.md": "b428b992601d5108487e7ce977ea13f860597230d3e36010dac0af681e49a6e9",
+    "skill/references/workflow.md": "691d4c5d58bd5b1cb52c3dc15655936b75c48f1692d0b855a1ef983f9cd2ec59",
+    "skill/references/workflow-web.md": "8f51dc95cbffe00ce035be875d6c07c40c9ea6bf0d0d71f96ef97001bfad53c4",
+    "skill/references/workflow-async.md": "02f0b3ca92a440bdf0072f2163979e3af26b177bb42df3b076511b41704024f4",
     "LICENSE": "4b18c7291304dc84d601a6305053e9a68b3f39877f27434556f30e184eb834b5"
   }
 }
